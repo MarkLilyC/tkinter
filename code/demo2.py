@@ -12,7 +12,6 @@ from tkinter import *
 from tkinter import filedialog
 import tkinter
 from PIL import Image, ImageTk
-from cv2 import cv2
 import win32api
 import os
 
@@ -53,26 +52,35 @@ def import_fdsfiles():
     tuple_string_filepath = filedialog.askopenfilenames(filetypes=[('FDS files', ('.fds', '.FDS'))]) # 打开窗口选择fds文件
     if tuple_string_filepath: # 当选择文件后
         btn_open.config(image=tkimage_opened) # 将文件打开图标置为check图标
-        comb_filenames.place(x=286, y=305, width=134) # 将comb绑定到窗口
+        comb_filenames.place(x=170, y=325) # 将comb绑定到窗口
         list_string_filename = list(map(lambda x : x.split('/', 10)[-1], tuple_string_filepath))
         # tuple_string_filename= tuple(map(lambda x : x.split('/', 10)[-1], tuple_string_filepath)) 
         comb_filenames['values'] = tuple(list_string_filename) # 设置comb值
+        comb_filenames.current(0) # 设置当前comb选中项为0（index）
+        comb_filenames.update() # update
+        global string_comb_curitem
+        string_comb_curitem = comb_filenames.get()
+        btn_file_edit.place(x=170, y=350) # 添加文件编辑按钮
+        btn_file_delete.place(x=243 , y=350) # 添加文件删除按钮
+        btn_file_save.place(x=316, y=350) # 添加fds文件组合保存按钮  
+        btn_play.config(image=tkimage_play)
         return tuple_string_filepath # 返回所选文件路径列表
     else:
         print("未选择任何文件")
         return None
     
-def getaa():
-    cwd_ini = os.getcwd() + '\\work' # 获得当前工作目录
-    work_his = cwd_ini + '\\workhis.txt'
-    if os.path.exists(cwd_ini):
-        with open(work_his,'w') as f:
-            f.writelines(list_string_filename)
-    else:
-        os.mkdir(cwd_ini)
-        with open(work_his,'w') as f:
-            f.writelines(list_string_filename)
-
+def test_func():
+    cwd_ini = os.getcwd() + '\\work' # 获得当前工作目录，组成工作文件存储路径
+    work_his = cwd_ini + '\\workhis.txt' # 创建历史fds路径存储文件
+    if os.path.exists(cwd_ini): # 如果工作文件路径存在
+        with open(work_his,'w', encoding='utf-8') as f: # 打开文件并以覆盖形式写入      
+            for i in list_string_filename:
+                f.writelines(i + '\n')
+    else: # 若工作文件路径不存在
+        os.mkdir(cwd_ini) # 创建工作文件存储文件啊及
+        with open(work_his,'w', encoding='utf-8') as f: # 打开文件并以覆盖形式写入      
+            for i in list_string_filename:
+                f.writelines(i + '\n')
 
 def init_file_btns(event): 
     '''通过comb选中选项激活文件功能按钮，并声明一个全局变量储存当前所选中的item
@@ -84,14 +92,15 @@ def init_file_btns(event):
     '''
     global string_comb_curitem
     string_comb_curitem = comb_filenames.get()
-    btn_file_edit.place(x=286, y=335) # 添加文件编辑按钮
-    btn_file_delete.place(x=320, y=335) # 添加文件删除按钮
-    btn_file_save.place(x=354, y=335) # 添加fds文件组合保存按钮  
+    # 不通过点击某一个comb选项来生成文件功能按钮，但是需要此点击事件来获取最新选中item，以便完成item删除
+    '''btn_file_edit.place(x=170, y=350) # 添加文件编辑按钮
+    btn_file_delete.place(x=243 , y=350) # 添加文件删除按钮
+    btn_file_save.place(x=316, y=350) # 添加fds文件组合保存按钮  '''
     
 def btn_file_edit_f():
     '''打开记事本查看编辑选中的fds文件
     '''
-    tmp_path = list_string_filepath[tuple_string_filename.index(string_comb_curitem)]
+    tmp_path = list_string_filename[list_string_filename.index(string_comb_curitem)]
     win32api.ShellExecute(0, 'open', 'notepad.exe', tmp_path,'',1)
        
 def btn_file_delete_f():
@@ -103,7 +112,7 @@ def btn_file_delete_f():
     comb_filenames.update() # update
     
 def btn_file_save_f():
-    '''存储当前选中fds文件
+    '''存储当前选中fds文件路径
     '''
     if os.path.exists():
         print('exist')
@@ -133,18 +142,23 @@ win_main = tk.Tk()
 win_main.title('demo1')
 win_main.geometry('800x500')
 win_main['bg'] = 'white'
-
+win_main.resizable(False, False)
+# 测试按钮图标
+tkimage_test = image2tk('A://tkinter//code//icon2//list.png', (36, 36))
+btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
+btn_test.place(x=0, y=0)
 # 播放按钮图标
-tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (128, 128))
-btn_play = tk.Button(win_main,image=tkimage_play, cursor='hand2', command=getaa) 
-btn_play.place(x=450, y=170) # 居中
+tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
+tkimage_play_f = image2tk('A://tkinter//code//icon2//run_f.png', (178, 178)) # 加载播放图标
+btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=test_func) # 创建播放按钮
+btn_play.place(x=460, y=140) # 绑定窗口
 # 引入FDS模型按钮图标
 # 初始图标：未选择FDS文件时的图标
-tkimage_open = image2tk('A://tkinter//code//icon2//add.png', (128, 128))
+tkimage_open = image2tk('A://tkinter//code//icon2//add.png', (178, 178))
 # 选择FDS文件后的图标
-tkimage_opened = image2tk('A://tkinter//code//icon2//check.png', (128, 128))
+tkimage_opened = image2tk('A://tkinter//code//icon2//check.png', (178, 178))
 btn_open = tk.Button(win_main,image=tkimage_open, cursor='hand2', command=import_fdsfiles) 
-btn_open.place(x=286, y=170) # 居中
+btn_open.place(x=170, y=140) # 居中
 # 功能图标
 # 编辑
 tkimage_edit = image2tk('A://tkinter//code//icon2//edit.png', (32, 32))
@@ -157,9 +171,8 @@ tkimage_save = image2tk('A://tkinter//code//icon2//save.png', (32, 32))
 btn_file_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_file_save_f)
 # 创建comb，此comb在选择按钮被点击并存在选择项是才被加载窗口中
 tkstringvar_filepath = tkinter.StringVar() # 创建StringVar储存文件名
-comb_filenames = ttk.Combobox(win_main, textvariable=tkstringvar_filepath) # 创建comb本体
+comb_filenames = ttk.Combobox(win_main, textvariable=tkstringvar_filepath, height=50, width=23) # 创建comb本体
 comb_filenames.bind("<<ComboboxSelected>>", init_file_btns) # 将comb与响应事件绑定
-
 string_comb_curitem = comb_filenames.get()
 
 win_main.mainloop()
