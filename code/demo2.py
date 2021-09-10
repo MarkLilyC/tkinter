@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-09 17:32:03
+LastEditTime: 2021-09-10 16:52:25
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
@@ -70,17 +70,8 @@ def import_fdsfiles():
         return None
     
 def test_func():
-    cwd_ini = os.getcwd() + '\\work' # 获得当前工作目录，组成工作文件存储路径
-    work_his = cwd_ini + '\\workhis.txt' # 创建历史fds路径存储文件
-    if os.path.exists(cwd_ini): # 如果工作文件路径存在
-        with open(work_his,'w', encoding='utf-8') as f: # 打开文件并以覆盖形式写入      
-            for i in list_string_filename:
-                f.writelines(i + '\n')
-    else: # 若工作文件路径不存在
-        os.mkdir(cwd_ini) # 创建工作文件存储文件啊及
-        with open(work_his,'w', encoding='utf-8') as f: # 打开文件并以覆盖形式写入      
-            for i in list_string_filename:
-                f.writelines(i + '\n')
+    pass
+
 
 def init_file_btns(event): 
     '''通过comb选中选项激活文件功能按钮，并声明一个全局变量储存当前所选中的item
@@ -136,7 +127,6 @@ def image2tk(iamgepath, size):
     '''
     return ImageTk.PhotoImage(image=Image.open(iamgepath).resize(size))
 
-
 # 窗口初始化
 win_main = tk.Tk()
 win_main.title('demo1')
@@ -145,12 +135,12 @@ win_main['bg'] = 'white'
 win_main.resizable(False, False)
 # 测试按钮图标
 tkimage_test = image2tk('A://tkinter//code//icon2//list.png', (36, 36))
-btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
+btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func())
 btn_test.place(x=0, y=0)
 # 播放按钮图标
 tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
 tkimage_play_f = image2tk('A://tkinter//code//icon2//run_f.png', (178, 178)) # 加载播放图标
-btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=test_func) # 创建播放按钮
+btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=test_func()) # 创建播放按钮
 btn_play.place(x=460, y=140) # 绑定窗口
 # 引入FDS模型按钮图标
 # 初始图标：未选择FDS文件时的图标
