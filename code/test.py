@@ -1,3 +1,11 @@
-l1 = [1,2,3,4,5]
-a = list(map(lambda i : i*i, l1))
-print(x for x in l1 if x >2)
+'''
+Author: your name
+Date: 2021-09-10 16:28:00
+LastEditTime: 2021-09-11 14:36:45
+LastEditors: your name
+Description: In User Settings Edit
+FilePath: \code\test.py
+'''
+l1 = []
+if l1:
+    print('a')

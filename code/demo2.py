@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-10 16:52:25
+LastEditTime: 2021-09-11 15:03:18
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
@@ -63,15 +63,15 @@ def import_fdsfiles():
         btn_file_edit.place(x=170, y=350) # 添加文件编辑按钮
         btn_file_delete.place(x=243 , y=350) # 添加文件删除按钮
         btn_file_save.place(x=316, y=350) # 添加fds文件组合保存按钮  
-        btn_play.config(image=tkimage_play)
+        btn_play.config(image=tkimage_play, state=NORMAL) # 更改播放按钮图标与状态
+        
         return tuple_string_filepath # 返回所选文件路径列表
     else:
         print("未选择任何文件")
         return None
     
 def test_func():
-    pass
-
+    print('aa_')
 
 def init_file_btns(event): 
     '''通过comb选中选项激活文件功能按钮，并声明一个全局变量储存当前所选中的item
@@ -96,22 +96,43 @@ def btn_file_edit_f():
        
 def btn_file_delete_f():
     '''在namelist删除当前comb中选中的item，再将tuple（list）赋值给comb——value，最后update，实现对comb中items的删除
+    case
+        1.当能删除（删除按钮显示时）
+            能进行当前元素的删除
+        2.当删除某元素后，列表不为空
+            应将comb值设置为列表第一，并将string——comb——curitem设置为第一个元素
+        3. 当删除元素后，列表为空
+            应将文件编辑等按钮隐藏
     '''
+    string_comb_curitem = comb_filenames.get()
     list_string_filename.remove(string_comb_curitem) # 在namelist中删除当前item
-    comb_filenames['values'] = tuple(list_string_filename) # 将更新后的list转换为tuple赋值给comb
-    comb_filenames.current(0) # 设置当前comb选中项为0（index）
-    comb_filenames.update() # update
+    if list_string_filename: # 当删除元素后，列表不为空
+        comb_filenames['values'] = tuple(list_string_filename) # 将更新后的list转换为tuple赋值给comb
+        comb_filenames.current(0) # 设置当前comb选中项为0（index）
+        string_comb_curitem = list_string_filename[0] # 设置当前string_comb_curitem为第一个元素
+        comb_filenames.update() # update
+    else: # 当列表为空后
+        btn_file_delete.place_forget()
+        btn_file_edit.place_forget()
+        btn_file_save.place_forget()
+        comb_filenames.place_forget()
+        btn_open.config(image=tkimage_open) # 回复打开按钮图标
+        btn_play.configure(state=DISABLED, image=tkimage_play_f)
     
 def btn_file_save_f():
     '''存储当前选中fds文件路径
     '''
-    if os.path.exists():
+    string_workcwd = os.getcwd() + '\\workhis'
+    if os.path.exists(string_workcwd):
         print('exist')
     else:
-        cwd_ini = os.getcwd() + '\\work' # 获得当前工作目录
-        os.mkdir(cwd_ini)
+        os.mkdir(string_workcwd)
 
-def image2tk(iamgepath, size):
+def btn_play_f():
+    video_path = filedialog.askopenfilenames() # 打开窗口选择视频，暂时不限制文件类型
+    print(video_path)
+
+def image2tk(iamgepath, target_size):
     '''[summary]Image方式读取图片，返回转换为tkimage
 
     Parameters
@@ -125,7 +146,7 @@ def image2tk(iamgepath, size):
     tkimage
         tkimage用于btn展示
     '''
-    return ImageTk.PhotoImage(image=Image.open(iamgepath).resize(size))
+    return ImageTk.PhotoImage(image=Image.open(iamgepath).resize(target_size))
 
 # 窗口初始化
 win_main = tk.Tk()
@@ -140,7 +161,8 @@ btn_test.place(x=0, y=0)
 # 播放按钮图标
 tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
 tkimage_play_f = image2tk('A://tkinter//code//icon2//run_f.png', (178, 178)) # 加载播放图标
-btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=test_func()) # 创建播放按钮
+btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_play_f()) # 创建播放按钮
+btn_play.configure(state=DISABLED) # 设置播放按钮初始状态为未激活 不可点击
 btn_play.place(x=460, y=140) # 绑定窗口
 # 引入FDS模型按钮图标
 # 初始图标：未选择FDS文件时的图标
