@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-11 15:03:18
+LastEditTime: 2021-09-11 15:48:28
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
@@ -15,41 +15,16 @@ from PIL import Image, ImageTk
 import win32api
 import os
 
-"""def playfunc():
-    '''[隐藏播放图标] 当点击播放图标时， 隐藏播放图标与按钮
-    '''
-    # label实现视频容器
-    image_cover = Image.open('A://tkinter//code/bg.png')
-    image_playcover= ImageTk.PhotoImage(image=image_cover)
-    label_video = tk.Label(win_main, width=600, height=400, bd=1, bg='white')
-    label_video.place(x=0,y=0)
-    string_filepath = filedialog.askopenfilename() # 打开窗口选择目标视频
-    btn_play.place_forget() # 隐藏播放按钮
-    video_tobeplayed = cv2.VideoCapture(string_filepath) # 打开目标视频
-    int_waittime = int(1000/video_tobeplayed.get(5))
-    int_movietime = int((video_tobeplayed.get(7)/video_tobeplayed.get(5))/60)
-    bar_playscale = tk.Scale(win_main, from_=0, to=int_movietime, length=1000, orient=tk.HORIZONTAL, resolution=0.1, 
-        showvalue=1, bd=0, cursor='hand2', tickinterval=int_movietime/20) 
-    bar_playscale.place(x=0, y=540)
-    while video_tobeplayed.isOpened(): # 当视频正常打开时
-        ret, image_frame = video_tobeplayed.read() # 读取视频帧
-        if ret == True: # 当成功读取时
-            image_frame = cv2.cvtColor(image_frame, cv2.COLOR_BGR2RGBA) # 修改颜色空间 
-            image_tobeplayed = Image.fromarray(image_frame).resize((540,360)) # 将cv2读取的图像转换为Image,并修改大小
-            imageTk_tobeplayed = ImageTk.PhotoImage(image=image_tobeplayed) # 转换为imagetk
-            label_video.configure(image=imageTk_tobeplayed) # 使用configure方法将label更新为最新待播放图像
-            label_video.image = imageTk_tobeplayed # 更新
-            label_video.update() # 更新
-            cv2.waitKey(int_waittime)
-        else:
-            break
-"""
-        
+# 声明一些变量
+list_string_filepath = [] # 存储选中的FDS路径
+list_string_filename = [] # 存储选中的FDS名
+string_comb_curitem = '' # 声明存储comb当前选中的文件名
         
 def import_fdsfiles():
-    global tuple_string_filepath # 声明存储filepath的全局变量tuple
-    global list_string_filename # 声明存储filepath的全局变量list
+    global list_string_filepath # 声明为全局变量
+    global list_string_filename # 声明为全局变量
     tuple_string_filepath = filedialog.askopenfilenames(filetypes=[('FDS files', ('.fds', '.FDS'))]) # 打开窗口选择fds文件
+    list_string_filepath = list(tuple_string_filepath) # 创建list存储选中的fds文件路径
     if tuple_string_filepath: # 当选择文件后
         btn_open.config(image=tkimage_opened) # 将文件打开图标置为check图标
         comb_filenames.place(x=170, y=325) # 将comb绑定到窗口
@@ -58,20 +33,20 @@ def import_fdsfiles():
         comb_filenames['values'] = tuple(list_string_filename) # 设置comb值
         comb_filenames.current(0) # 设置当前comb选中项为0（index）
         comb_filenames.update() # update
-        global string_comb_curitem
-        string_comb_curitem = comb_filenames.get()
+        global string_comb_curitem # 声明全局
+        string_comb_curitem = comb_filenames.get() # 赋值为当前选中
         btn_file_edit.place(x=170, y=350) # 添加文件编辑按钮
         btn_file_delete.place(x=243 , y=350) # 添加文件删除按钮
         btn_file_save.place(x=316, y=350) # 添加fds文件组合保存按钮  
         btn_play.config(image=tkimage_play, state=NORMAL) # 更改播放按钮图标与状态
-        
-        return tuple_string_filepath # 返回所选文件路径列表
     else:
         print("未选择任何文件")
-        return None
+
+
     
 def test_func():
-    print('aa_')
+    print(list_string_filepath)
+    print(list_string_filename)
 
 def init_file_btns(event): 
     '''通过comb选中选项激活文件功能按钮，并声明一个全局变量储存当前所选中的item
@@ -104,8 +79,10 @@ def btn_file_delete_f():
         3. 当删除元素后，列表为空
             应将文件编辑等按钮隐藏
     '''
-    string_comb_curitem = comb_filenames.get()
+    string_comb_curitem = comb_filenames.get() # 获取当前comb选中值
+    int_tmp_index = list_string_filename.index(string_comb_curitem)
     list_string_filename.remove(string_comb_curitem) # 在namelist中删除当前item
+    list_string_filepath.pop(int_tmp_index) # 在pathlist中删除当前item对应的path
     if list_string_filename: # 当删除元素后，列表不为空
         comb_filenames['values'] = tuple(list_string_filename) # 将更新后的list转换为tuple赋值给comb
         comb_filenames.current(0) # 设置当前comb选中项为0（index）
@@ -122,11 +99,17 @@ def btn_file_delete_f():
 def btn_file_save_f():
     '''存储当前选中fds文件路径
     '''
-    string_workcwd = os.getcwd() + '\\workhis'
-    if os.path.exists(string_workcwd):
-        print('exist')
+    string_workcwd_dir = os.getcwd() + '\\work'
+    string_workcwd_file = os.getcwd() + '\\work\\workhis.txt' # 获取并创建历史工作文件夹路径
+    if os.path.exists(string_workcwd_dir): # 当此路径存在 
+        with open(string_workcwd_file, 'w') as f:
+            for i in list_string_filepath:
+                f.writelines(i + '\n')
     else:
-        os.mkdir(string_workcwd)
+        os.mkdir(string_workcwd_dir)
+        with open(string_workcwd_file, 'w') as f:
+            for i in list_string_filepath:
+                f.writelines(i)
 
 def btn_play_f():
     video_path = filedialog.askopenfilenames() # 打开窗口选择视频，暂时不限制文件类型
@@ -156,12 +139,12 @@ win_main['bg'] = 'white'
 win_main.resizable(False, False)
 # 测试按钮图标
 tkimage_test = image2tk('A://tkinter//code//icon2//list.png', (36, 36))
-btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func())
+btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_file_save_f)
 btn_test.place(x=0, y=0)
 # 播放按钮图标
 tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
 tkimage_play_f = image2tk('A://tkinter//code//icon2//run_f.png', (178, 178)) # 加载播放图标
-btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_play_f()) # 创建播放按钮
+btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_file_save_f) # 创建播放按钮
 btn_play.configure(state=DISABLED) # 设置播放按钮初始状态为未激活 不可点击
 btn_play.place(x=460, y=140) # 绑定窗口
 # 引入FDS模型按钮图标
