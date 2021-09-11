@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-11 15:48:28
+LastEditTime: 2021-09-11 15:54:53
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
@@ -139,7 +139,7 @@ win_main['bg'] = 'white'
 win_main.resizable(False, False)
 # 测试按钮图标
 tkimage_test = image2tk('A://tkinter//code//icon2//list.png', (36, 36))
-btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_file_save_f)
+btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_play_f)
 btn_test.place(x=0, y=0)
 # 播放按钮图标
 tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
