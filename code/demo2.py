@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-11 15:54:53
+LastEditTime: 2021-09-11 16:15:23
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
@@ -18,8 +18,9 @@ import os
 # 声明一些变量
 list_string_filepath = [] # 存储选中的FDS路径
 list_string_filename = [] # 存储选中的FDS名
-string_comb_curitem = '' # 声明存储comb当前选中的文件名
-        
+string_comb_curitem = '' # 存储comb当前选中的文件名
+string_video_path = '' # 存储视频地址
+
 def import_fdsfiles():
     global list_string_filepath # 声明为全局变量
     global list_string_filename # 声明为全局变量
@@ -41,12 +42,16 @@ def import_fdsfiles():
         btn_play.config(image=tkimage_play, state=NORMAL) # 更改播放按钮图标与状态
     else:
         print("未选择任何文件")
-
-
     
 def test_func():
-    print(list_string_filepath)
-    print(list_string_filename)
+    string_video_path = filedialog.askopenfilenames() # 打开窗口选择视频，暂时不限制文件类型
+    if string_video_path: # 当选中视频后
+        print(string_video_path)
+        # 调整页面布局
+        btn_open.place(x=0, y=0)
+        comb_filenames.place(x=0, y=185)
+    else: # 当未选中视频
+        string_video_path = '' # 将此变量置空
 
 def init_file_btns(event): 
     '''通过comb选中选项激活文件功能按钮，并声明一个全局变量储存当前所选中的item
@@ -112,8 +117,17 @@ def btn_file_save_f():
                 f.writelines(i)
 
 def btn_play_f():
-    video_path = filedialog.askopenfilenames() # 打开窗口选择视频，暂时不限制文件类型
-    print(video_path)
+    string_video_path = filedialog.askopenfilenames() # 打开窗口选择视频，暂时不限制文件类型
+    if string_video_path: # 当选中视频后
+        print(string_video_path)
+        # 调整页面布局
+        btn_open.place(x=0, y=0)
+        comb_filenames.place(x=0, y=185)
+        btn_file_edit.place(x=0, y=210)
+        btn_file_delete.place(x=73, y=210)
+        btn_file_save.place(x=146, y=210)
+    else: # 当未选中视频
+        string_video_path = '' # 将此变量置空
 
 def image2tk(iamgepath, target_size):
     '''[summary]Image方式读取图片，返回转换为tkimage
@@ -139,12 +153,12 @@ win_main['bg'] = 'white'
 win_main.resizable(False, False)
 # 测试按钮图标
 tkimage_test = image2tk('A://tkinter//code//icon2//list.png', (36, 36))
-btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_play_f)
-btn_test.place(x=0, y=0)
+btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
+btn_test.place(x=0, y=450)
 # 播放按钮图标
 tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
 tkimage_play_f = image2tk('A://tkinter//code//icon2//run_f.png', (178, 178)) # 加载播放图标
-btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_file_save_f) # 创建播放按钮
+btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_play_f) # 创建播放按钮
 btn_play.configure(state=DISABLED) # 设置播放按钮初始状态为未激活 不可点击
 btn_play.place(x=460, y=140) # 绑定窗口
 # 引入FDS模型按钮图标
