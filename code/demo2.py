@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-11 16:15:23
+LastEditTime: 2021-09-11 17:19:30
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
@@ -14,7 +14,8 @@ import tkinter
 from PIL import Image, ImageTk
 import win32api
 import os
-
+import cv2
+import numpy
 # 声明一些变量
 list_string_filepath = [] # 存储选中的FDS路径
 list_string_filename = [] # 存储选中的FDS名
@@ -44,12 +45,21 @@ def import_fdsfiles():
         print("未选择任何文件")
     
 def test_func():
-    string_video_path = filedialog.askopenfilenames() # 打开窗口选择视频，暂时不限制文件类型
+    string_video_path = filedialog.askopenfilename() # 打开窗口选择视频，暂时不限制文件类型
     if string_video_path: # 当选中视频后
         print(string_video_path)
         # 调整页面布局
         btn_open.place(x=0, y=0)
-        comb_filenames.place(x=0, y=185)
+        video_tobeplayed = cv2.VideoCapture(string_video_path)
+        int_frame_count = int(video_tobeplayed.get(cv2.CAP_PROP_FRAME_COUNT)) # 帧数
+        # 根据视频宽高创建label“播放”视频
+        bool_isopened, ndarray_image_1stframe = video_tobeplayed.read() # 获取视频第一帧
+        tuple_image_info = ndarray_image_1stframe.shape # 获取图像信息
+        int_frame_width = tuple_image_info[1]
+        int_frame_height = tuple_image_info[0]
+        resizepicandlabel(tuple_image_info, (600, 400))
+        label_video = tk.Label(win_main, width=600, height=int(float_label_height), bd=1, bg="#333333")
+        label_video.place(x=189, y=10)
     else: # 当未选中视频
         string_video_path = '' # 将此变量置空
 
@@ -126,6 +136,8 @@ def btn_play_f():
         btn_file_edit.place(x=0, y=210)
         btn_file_delete.place(x=73, y=210)
         btn_file_save.place(x=146, y=210)
+        # 读取第一帧图像用做缓冲
+        
     else: # 当未选中视频
         string_video_path = '' # 将此变量置空
 
@@ -145,6 +157,30 @@ def image2tk(iamgepath, target_size):
     '''
     return ImageTk.PhotoImage(image=Image.open(iamgepath).resize(target_size))
 
+def resizepicandlabel(imagesize: tuple, labelsize: tuple):
+    '''resize pic and label based on their siezs
+
+    Parameters
+    ----------
+    image : tuple
+        pic_size (int int)
+    labelsize : tuple
+        label_size (int int)
+    '''
+    int_frame_width = imagesize[1]
+    int_frame_height = imagesize[0]
+    int_label_width = labelsize[1]
+    int_label_height = labelsize[0]
+    float_proportion_width = int_frame_width / int_label_width
+    float_proportion_heigth = int_frame_height / int_label_height
+    if float_proportion_width == 1 and float_proportion_heigth == 1: # 当二者尺寸相同，则返回label本身尺寸
+        return labelsize
+    elif float_proportion_width < 1 and float_proportion_heigth < 1: # 当pic全小于label，则对pic进行放大
+        return [int_frame_width / float_proportion_heigth, int_label_height] if float_proportion_width < float_proportion_heigth else [int_frame_height / float_proportion_width, int_label_width]
+    else: # 当pic单边小于pic时
+        return [] if float_proportion_width < float_proportion_heigth else []
+       
+
 # 窗口初始化
 win_main = tk.Tk()
 win_main.title('demo1')
@@ -154,7 +190,7 @@ win_main.resizable(False, False)
 # 测试按钮图标
 tkimage_test = image2tk('A://tkinter//code//icon2//list.png', (36, 36))
 btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
-btn_test.place(x=0, y=450)
+btn_test.place(x=0, y=400)
 # 播放按钮图标
 tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
 tkimage_play_f = image2tk('A://tkinter//code//icon2//run_f.png', (178, 178)) # 加载播放图标
