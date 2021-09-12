@@ -27,5 +27,5 @@ def resizepicandlabel(imagesize: tuple, labelsize: tuple):
     float_proportion_heigth = int_frame_height / int_label_height
     return ([int_frame_width / float_proportion_width, int_frame_height / float_proportion_width, 0] if float_proportion_width > float_proportion_heigth else [int_frame_width / float_proportion_heigth, int_frame_height / float_proportion_heigth, 1])
 
-a = resizepicandlabel([720, 576], [600, 400])
-print(a[:2])
+a = [1,2,3,4,5,6]
+print(a[-1])
