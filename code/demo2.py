@@ -22,12 +22,16 @@ list_string_filepath = [] # 存储选中的FDS路径
 list_string_filename = [] # 存储选中的FDS名
 string_comb_curitem = '' # 存储comb当前选中的文件名
 string_video_path = '' # 存储视频地址
-bool_fdshis_exist = NO
-bool_videohis_exist = NO
+bool_fdshis_exist = NO # 是否存在fds的历史使用记录
+bool_videohis_exist = NO # 是否存在video的历史使用记录
+bool_fdsimported = NO # 是否存在手动选择的fds文件
 
 def import_fdsfiles():
-    global list_string_filepath # 声明为全局变量
-    global list_string_filename # 声明为全局变量
+    # 声明为全局变量
+    global list_string_filepath 
+    global list_string_filename 
+    global bool_fdsimported 
+    global string_comb_curitem  
     tuple_string_filepath = filedialog.askopenfilenames(filetypes=[('FDS files', ('.fds', '.FDS'))]) # 打开窗口选择fds文件
     list_string_filepath = list(tuple_string_filepath) # 创建list存储选中的fds文件路径
     if tuple_string_filepath: # 当选择文件后
@@ -110,26 +114,39 @@ def comb_getcur(event):
 def btn_init():
     '''激活文件功能按钮
     '''
-    global list_string_filepath # 声明为全局变量
-    global list_string_filename # 声明为全局变量
-    with open(string_workcwd_file, 'r') as f:
-            list_string_filepath = f.readlines()
+    global list_string_filepath 
+    global list_string_filename 
+    global bool_fdsimported 
+    global string_comb_curitem  
     btn_open.config(image=tkimage_opened) # 将文件打开图标置为check图标
-    comb_filenames.place(x=170, y=325) # 将comb绑定到窗口
-    list_string_filename = list(map(lambda x : x.split('/', 10)[-1], list_string_filepath))
-    # tuple_string_filename= tuple(map(lambda x : x.split('/', 10)[-1], tuple_string_filepath)) 
-    comb_filenames['values'] = tuple(list_string_filename) # 设置comb值
-    comb_filenames.current(0) # 设置当前comb选中项为0（index）
-    comb_filenames.update() # update
-    global string_comb_curitem # 声明全局
-    string_comb_curitem = comb_filenames.get() # 赋值为当前选中
     btn_file_edit.place(x=170, y=350) # 添加文件编辑按钮
     btn_file_delete.place(x=243 , y=350) # 添加文件删除按钮
     btn_file_save.place(x=316, y=350) # 添加fds文件组合保存按钮  
     btn_play.config(image=tkimage_play, state=NORMAL) # 更改播放按钮图标与状态
+    comb_filenames.place(x=170, y=325) # 将comb绑定到窗口
+    # comb设置
+    list_string_filename = list(map(lambda x : x.split('/', 10)[-1], list_string_filepath))
+    comb_filenames['values'] = tuple(list_string_filename) # 设置comb值
+    comb_filenames.current(0) # 设置当前comb选中项为0（index）
+    comb_filenames.update() # update
+    # 改变一些变量
+    string_comb_curitem = comb_filenames.get() # 赋值为当前选中
+    bool_fdsimported = YES
 
 def btn_fds_his_f():
-    print(list_string_filepath)
+    global list_string_filepath
+    global list_string_filename
+    with open(string_workcwd_file, 'r', encoding='utf-8') as f:
+        list_string_filepath = f.readlines() # 修改fds路径列表
+        list_string_filename = list(map(lambda x : x.split('/', 10)[-1], list_string_filepath))
+    if bool_fdsimported:
+        # 当存在手动导入的fds文件，则当点击从历史记录读取时，应只修改comb值
+        # 读取fdshis内的记录
+            comb_filenames['values'] = list_string_filename
+            comb_filenames.current(0)
+            comb_filenames.update()
+    else:
+        btn_init()
 
 def btn_file_edit_f():
     '''打开记事本查看编辑选中的fds文件
@@ -148,6 +165,7 @@ def btn_file_delete_f():
         3. 当删除元素后，列表为空
             应将文件编辑等按钮隐藏
     '''
+    global bool_fdsimported
     string_comb_curitem = comb_filenames.get() # 获取当前comb选中值
     int_tmp_index = list_string_filename.index(string_comb_curitem)
     list_string_filename.remove(string_comb_curitem) # 在namelist中删除当前item
@@ -158,12 +176,14 @@ def btn_file_delete_f():
         string_comb_curitem = list_string_filename[0] # 设置当前string_comb_curitem为第一个元素
         comb_filenames.update() # update
     else: # 当列表为空后
+        bool_fdsimported = NO
         btn_file_delete.place_forget()
         btn_file_edit.place_forget()
         btn_file_save.place_forget()
         comb_filenames.place_forget()
         btn_open.config(image=tkimage_open) # 回复打开按钮图标
         btn_play.configure(state=DISABLED, image=tkimage_play_f)
+        
     
 def btn_file_save_f():
     '''存储当前选中fds文件路径
@@ -261,7 +281,7 @@ def resizepicandlabel(imagesize: list, labelsize: list):
     return ((int_frame_width / float_proportion_width, int_frame_height / float_proportion_width, 0) if float_proportion_width > float_proportion_heigth else (int_frame_width / float_proportion_heigth, int_frame_height / float_proportion_heigth, 1))
        
 def test_func2():
-    text_insert_changeline(text_info_videodetection, 'Video opened successfully')     
+    print(list_string_filepath)   
 
 def text_insert_changeline(text:tkinter.Text, line:str):
     '''输入文字到Text控件并换行
@@ -278,6 +298,7 @@ def text_insert_changeline(text:tkinter.Text, line:str):
 
 # 查看是否存在工作目录
 string_workcwd_dir = os.getcwd() + '\\work'
+print(string_workcwd_dir)
 string_workcwd_file = os.getcwd() + '\\work\\fdshis.txt' # 获取并创建历史工作文件夹路径
 string_workcwd_video = os.getcwd() + '\\work\\videohis.txt'
 # 当此文件不存在也不需要在程序初始化时创建，因为后续函数会再次确认此文件是否存在，当不存在时，彼时再行创建
@@ -303,10 +324,13 @@ btn_test2 = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test
 btn_test2.place(x=650, y=450)
 
 # 载入历史记录按钮
-btn_fds_his = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_init, state=(NORMAL if bool_fdshis_exist else DISABLED))
+btn_fds_his = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_fds_his_f,
+                state=(NORMAL if bool_fdshis_exist else DISABLED))
 btn_fds_his.place(x=354, y=140)
-btn_video_his = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_init, state=(NORMAL if bool_videohis_exist else DISABLED))
+btn_video_his = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_init,
+                state=(NORMAL if bool_videohis_exist else DISABLED))
 btn_video_his.place(x=418, y=282)
+
 # 播放按钮图标
 tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
 tkimage_play_f = image2tk('A://tkinter//code//icon2//run_f.png', (178, 178)) # 加载播放图标
