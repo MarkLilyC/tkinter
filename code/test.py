@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-10 16:28:00
-LastEditTime: 2021-09-12 14:53:14
+LastEditTime: 2021-09-12 16:22:49
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \code\test.py
@@ -25,7 +25,7 @@ def resizepicandlabel(imagesize: tuple, labelsize: tuple):
     int_label_height = labelsize[1]
     float_proportion_width = int_frame_width / int_label_width
     float_proportion_heigth = int_frame_height / int_label_height
-    return ([int_frame_width / float_proportion_width, int_frame_height / float_proportion_width] if float_proportion_width > float_proportion_heigth else [int_frame_width / float_proportion_heigth, int_frame_height / float_proportion_heigth])
+    return ([int_frame_width / float_proportion_width, int_frame_height / float_proportion_width, 0] if float_proportion_width > float_proportion_heigth else [int_frame_width / float_proportion_heigth, int_frame_height / float_proportion_heigth, 1])
 
-
-print(resizepicandlabel([1280, 692], [600, 400]))
+a = resizepicandlabel([720, 576], [600, 400])
+print(a[:2])
