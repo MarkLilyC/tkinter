@@ -8,7 +8,7 @@
     label_video = tk.Label(win_main, width=600, height=400, bd=1, bg='white')
     label_video.place(x=0,y=0)
     string_filepath = filedialog.askopenfilename() # 打开窗口选择目标视频
-    btn_play.place_forget() # 隐藏播放按钮
+    btn_play.c() # 隐藏播放按钮
     video_tobeplayed = cv2.VideoCapture(string_filepath) # 打开目标视频
     int_waittime = int(1000/video_tobeplayed.get(5))
     int_movietime = int((video_tobeplayed.get(7)/video_tobeplayed.get(5))/60)

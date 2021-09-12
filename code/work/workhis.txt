@@ -1,3 +1,6 @@
-A:/tkinter/code/test4.fds
-A:/tkinter/code/test5.fds
-A:/tkinter/code/test6.fds
+A:/tkinter/code/fds/test.fds
+A:/tkinter/code/fds/test2.fds
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds

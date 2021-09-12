@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-11 17:19:30
+LastEditTime: 2021-09-12 16:03:54
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
@@ -47,21 +47,59 @@ def import_fdsfiles():
 def test_func():
     string_video_path = filedialog.askopenfilename() # 打开窗口选择视频，暂时不限制文件类型
     if string_video_path: # 当选中视频后
-        print(string_video_path)
-        # 调整页面布局
-        btn_open.place(x=0, y=0)
+        # 读取视频
         video_tobeplayed = cv2.VideoCapture(string_video_path)
         int_frame_count = int(video_tobeplayed.get(cv2.CAP_PROP_FRAME_COUNT)) # 帧数
-        # 根据视频宽高创建label“播放”视频
         bool_isopened, ndarray_image_1stframe = video_tobeplayed.read() # 获取视频第一帧
-        tuple_image_info = ndarray_image_1stframe.shape # 获取图像信息
-        int_frame_width = tuple_image_info[1]
-        int_frame_height = tuple_image_info[0]
-        resizepicandlabel(tuple_image_info, (600, 400))
-        label_video = tk.Label(win_main, width=600, height=int(float_label_height), bd=1, bg="#333333")
-        label_video.place(x=189, y=10)
+        if bool_isopened:
+            # 页面改动
+            btn_open.place(x=5, y=0)
+            text_info_videodetection.place(x=5, y=280)
+            text_insert_changeline(text_info_videodetection, 'Video readed successfully')
+
+            btns_change_f(list_btns=[btn_open], mode=1)
+
+            # ndarray_image_1stframe = cv2.cvtColor(ndarray_image_1stframe, cv2.COLOR_BGR2BGRA) 
+            # 获取视频图像信息
+            tuple_image_info = ndarray_image_1stframe.shape
+            int_frame_width = tuple_image_info[1]
+            int_frame_height = tuple_image_info[0] 
+            # 对图像进行缩放
+            tuple_float_picsize_resize = tuple(map(int, resizepicandlabel((int_frame_width, int_frame_height), (600, 400)))) 
+            # ndarray_image_1stframe = cv2.resize(ndarray_image_1stframe, tuple_float_picsize_resize,interpolation=cv2.INTER_NEAREST) # 采用最近邻插值法缩放图片
+            image_1st = Image.fromarray(ndarray_image_1stframe).resize(tuple_float_picsize_resize) 
+            tkimage_1stframe = ImageTk.PhotoImage(image=image_1st)
+            # 创建label
+            label_video = tk.Label(win_main, width=tuple_float_picsize_resize[0], height=tuple_float_picsize_resize[1], bd=0, bg='#333333')
+            label_video.place(x=194, y=0)
+            # 贴图
+            label_video.configure(image=tkimage_1stframe)
+            label_video.image = tkimage_1stframe 
+            label_video.update() 
+        else :
+            print('视频加载失败')
     else: # 当未选中视频
         string_video_path = '' # 将此变量置空
+
+def btns_change_f(list_btns: list, mode: int):
+    '''作为btn的状态修改函数
+
+    Parameters
+    ----------
+    list_btns : list[btn1,btn2]
+        将待修改状态的btns作为列表元素传入
+    mode : int
+        修改模式:1-2disabled，2-2normal，3-2forgot
+    '''
+    if mode == 1 :
+        for i in list_btns:
+            i.configure(state=DISABLED)
+    elif mode == 2:
+        for i in list_btns:
+            i.configure(state=NORMAL)
+    else :
+        for i in list_btns:
+            i.place_forget()
 
 def init_file_btns(event): 
     '''通过comb选中选项激活文件功能按钮，并声明一个全局变量储存当前所选中的item
@@ -131,11 +169,11 @@ def btn_play_f():
     if string_video_path: # 当选中视频后
         print(string_video_path)
         # 调整页面布局
-        btn_open.place(x=0, y=0)
-        comb_filenames.place(x=0, y=185)
-        btn_file_edit.place(x=0, y=210)
-        btn_file_delete.place(x=73, y=210)
-        btn_file_save.place(x=146, y=210)
+        btn_open.place(x=5, y=0)
+        comb_filenames.place(x=5, y=185)
+        btn_file_edit.place(x=5, y=210)
+        btn_file_delete.place(x=78, y=210)
+        btn_file_save.place(x=151, y=210)
         # 读取第一帧图像用做缓冲
         
     else: # 当未选中视频
@@ -157,29 +195,45 @@ def image2tk(iamgepath, target_size):
     '''
     return ImageTk.PhotoImage(image=Image.open(iamgepath).resize(target_size))
 
-def resizepicandlabel(imagesize: tuple, labelsize: tuple):
-    '''resize pic and label based on their siezs
+def resizepicandlabel(imagesize: list, labelsize: list):
+    '''使pic尺寸缩放适合label尺寸
 
     Parameters
     ----------
-    image : tuple
-        pic_size (int int)
-    labelsize : tuple
-        label_size (int int)
+    imageshape : list
+        图片尺寸[width, height]
+    labelsize : list
+        label尺寸[width, height]
+
+    Returns
+    -------
+    list
+        返回图片缩放后的尺寸
     '''
-    int_frame_width = imagesize[1]
-    int_frame_height = imagesize[0]
-    int_label_width = labelsize[1]
-    int_label_height = labelsize[0]
+    int_frame_width = imagesize[0]
+    int_frame_height = imagesize[1]
+    int_label_width = labelsize[0]
+    int_label_height = labelsize[1]
     float_proportion_width = int_frame_width / int_label_width
     float_proportion_heigth = int_frame_height / int_label_height
-    if float_proportion_width == 1 and float_proportion_heigth == 1: # 当二者尺寸相同，则返回label本身尺寸
-        return labelsize
-    elif float_proportion_width < 1 and float_proportion_heigth < 1: # 当pic全小于label，则对pic进行放大
-        return [int_frame_width / float_proportion_heigth, int_label_height] if float_proportion_width < float_proportion_heigth else [int_frame_height / float_proportion_width, int_label_width]
-    else: # 当pic单边小于pic时
-        return [] if float_proportion_width < float_proportion_heigth else []
+    return ((int_frame_width / float_proportion_width, int_frame_height / float_proportion_width) if float_proportion_width > float_proportion_heigth else (int_frame_width / float_proportion_heigth, int_frame_height / float_proportion_heigth))
        
+def test_func2():
+    text_insert_changeline(text_info_videodetection, 'Video opened successfully')  
+    
+
+def text_insert_changeline(text:tkinter.Text, line:str):
+    '''输入文字到Text控件并换行
+
+    Parameters
+    ----------
+    text : tkinter.Text
+        待输入文字的text控件
+    line : str
+        待输入的文字
+    ''' 
+    text.insert(tk.INSERT, line)
+    text.insert(tk.INSERT, '\n')
 
 # 窗口初始化
 win_main = tk.Tk()
@@ -190,7 +244,11 @@ win_main.resizable(False, False)
 # 测试按钮图标
 tkimage_test = image2tk('A://tkinter//code//icon2//list.png', (36, 36))
 btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
-btn_test.place(x=0, y=400)
+btn_test.place(x=600, y=450)
+
+btn_test2 = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func2)
+btn_test2.place(x=650, y=450)
+
 # 播放按钮图标
 tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
 tkimage_play_f = image2tk('A://tkinter//code//icon2//run_f.png', (178, 178)) # 加载播放图标
@@ -219,6 +277,12 @@ tkstringvar_filepath = tkinter.StringVar() # 创建StringVar储存文件名
 comb_filenames = ttk.Combobox(win_main, textvariable=tkstringvar_filepath, height=50, width=23) # 创建comb本体
 comb_filenames.bind("<<ComboboxSelected>>", init_file_btns) # 将comb与响应事件绑定
 string_comb_curitem = comb_filenames.get()
+# 创建textbox，此box在选择视频后并视频读取成功后，随着主页面其余图标运动时被加载，用以展示当前视频检测进度
+text_info_videodetection = tk.Text(win_main, width=26, height=16, relief=RIDGE, bg='#F5F5F5')
+text_info_videodetection.bind("<Key>", lambda a: "break")
+
+
+
 
 win_main.mainloop()
 
