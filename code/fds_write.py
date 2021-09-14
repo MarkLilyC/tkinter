@@ -105,9 +105,9 @@ def fds_bats_run(fds_run_paths: list):
     return 0
 
 
-def cal(delay, back):
+def cal(path, delay, back):
     # 读取视频
-    list1 = sub_find_Back.video_read('..//Input//pets.mp4', 50, delay)
+    list1 = sub_find_Back.video_read(path, 50, delay)
     # 计算背景
 
     if back is None:
@@ -125,7 +125,7 @@ def cal(delay, back):
         print(per_nums_list)  # [5, 3, 1, 2, 3, 2, 2, 1, 3, 3, 1, 1]
     return per_nums_list, back
 
-# 定义（输入）模板文件的路径
+'''# 定义（输入）模板文件的路径
 list_path = []
 path0 = 'C:\\Users\\edison\\Desktop\\test\\base.fds'
 list_path.append(path0)
@@ -191,4 +191,4 @@ for i in range(len(time_person_by_num)):
     for j in time_person_by_num[i]:
         file_handle.write(j + ',')
     file_handle.write('\n')
-ana_excel.numtimepic(time_person_by_num, per_nums_list, res_path_pic)
+ana_excel.numtimepic(time_person_by_num, per_nums_list, res_path_pic)'''

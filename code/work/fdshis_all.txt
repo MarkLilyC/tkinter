@@ -1,0 +1,85 @@
+2021-09-14 14:14:47
+A:/tkinter/code/fds/test.fds
+A:/tkinter/code/fds/test2.fds
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds
+2021-09-14 14:14:54
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds
+2021-09-14 14:17:32
+A:/tkinter/code/fds/test2.fds
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds
+2021-09-14 14:18:20
+A:/tkinter/code/fds/test4.fds
+
+A:/tkinter/code/fds/test5.fds
+
+A:/tkinter/code/fds/test6.fds
+
+2021-09-14 14:18:54
+A:/tkinter/code/fds/test4.fds
+
+
+
+A:/tkinter/code/fds/test5.fds
+
+
+
+A:/tkinter/code/fds/test6.fds
+
+
+
+2021-09-14 14:18:59
+A:/tkinter/code/fds/test.fds
+A:/tkinter/code/fds/test2.fds
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds
+2021-09-14 14:19:26
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds
+2021-09-14 14:19:34
+A:/tkinter/code/fds/test5.fds
+
+A:/tkinter/code/fds/test6.fds
+
+2021-09-14 14:22:55
+A:/tkinter/code/fds/test.fds
+A:/tkinter/code/fds/test2.fds
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds
+2021-09-14 14:23:55
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds
+2021-09-14 14:24:01
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds
+2021-09-14 16:00:27
+A:/tkinter/code/fds/test.fds
+A:/tkinter/code/fds/test2.fds
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds
+2021-09-14 16:00:32
+A:/tkinter/code/fds/test.fds
+A:/tkinter/code/fds/test2.fds
+A:/tkinter/code/fds/test3.fds
+A:/tkinter/code/fds/test4.fds
+A:/tkinter/code/fds/test5.fds
+A:/tkinter/code/fds/test6.fds

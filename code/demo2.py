@@ -1,12 +1,13 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-12 17:19:28
+LastEditTime: 2021-09-14 16:50:41
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
 '''
 from genericpath import exists
+from test import get_time_stamp
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
@@ -16,16 +17,27 @@ from PIL import Image, ImageTk
 import win32api
 import os
 import cv2
+import time
+import fds_write
 import numpy
+import fds_run
+import sub_find_Back
+
 # 声明一些变量
 list_string_filepath = [] # 存储选中的FDS路径
 list_string_filename = [] # 存储选中的FDS名
 string_comb_curitem = '' # 存储comb当前选中的文件名
 string_video_path = '' # 存储当前选中的视频地址
+string_videodec_results_path = [] # 存储当前视频检测结果图像文件夹
 list_string_videopath_his = [] # 存储从历史记录中读取的videos历史记录
 bool_fdshis_exist = NO # 是否存在fds的历史使用记录
 bool_videohis_exist = NO # 是否存在video的历史使用记录
 bool_fdsimported = NO # 是否存在手动选择的fds文件
+string_workcwd_dir = os.getcwd() + '\\work'
+string_path_fdshis_arti = os.getcwd() + '\\work\\fdshis.txt' # 获取并创建历史工作文件夹路径
+string_path_fdshis_auto = os.getcwd() + '\\work\\fdshis_all.txt' # 获取并创建历史工作文件夹路径
+string_path_videohis_arti = os.getcwd() + '\\work\\videohis.txt'
+string_path_videohis_auto = os.getcwd() + '\\work\\videohis_all.txt'
 
 def import_fdsfiles():
     # 声明为全局变量
@@ -39,43 +51,43 @@ def import_fdsfiles():
         btn_init()
     else:
         print("未选择任何文件")
-    
+
+def get_time_stamp():
+    '''获取时间戳
+
+    Returns
+    -------
+    str
+        时间戳：年月日 时分秒
+    '''
+    now = int(round(time.time()*1000))
+    time_stamp = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(now/1000))
+    return time_stamp
+
 def test_func():
-    string_video_path = filedialog.askopenfilename() # 打开窗口选择视频，暂时不限制文件类型
-    if string_video_path: # 当选中视频后
-        # 读取视频
-        video_tobeplayed = cv2.VideoCapture(string_video_path)
-        int_frame_count = int(video_tobeplayed.get(cv2.CAP_PROP_FRAME_COUNT)) # 帧数
-        bool_isopened, ndarray_image_1stframe = video_tobeplayed.read() # 获取视频第一帧
-        if bool_isopened:
-            # 页面改动
-            btn_open.place(x=5, y=0)
-            text_info_videodetection.place(x=5, y=280)
-            text_insert_changeline(text_info_videodetection, 'Video readed successfully')
-            btns_change_f(list_btns=[btn_open], mode=1)
-            # ndarray_image_1stframe = cv2.cvtColor(ndarray_image_1stframe, cv2.COLOR_BGR2BGRA) 
-            # 获取视频图像信息
-            tuple_image_info = ndarray_image_1stframe.shape
-            int_frame_width = tuple_image_info[1]
-            int_frame_height = tuple_image_info[0] 
-            # 对图像进行缩放
-            tuple_float_picsize_resize = tuple(map(int, resizepicandlabel((int_frame_width, int_frame_height), (600, 400)))) 
-            # ndarray_image_1stframe = cv2.resize(ndarray_image_1stframe, tuple_float_picsize_resize,interpolation=cv2.INTER_NEAREST) # 采用最近邻插值法缩放图片
-            image_1st = Image.fromarray(ndarray_image_1stframe).resize(tuple_float_picsize_resize[:2]) 
-            tkimage_1stframe = ImageTk.PhotoImage(image=image_1st)
-            # 创建label
-            label_video = tk.Label(win_main, width=tuple_float_picsize_resize[0], height=tuple_float_picsize_resize[1], bd=0, bg='#333333')
-            # 当原图缩放依据为height（即缩放后高满尺寸），此时宽度未达到600，应将图片在图片展示区域设置；当缩放依据为width时 同理
-            label_video.place(x = (194 if tuple_float_picsize_resize[2] == 0 else (494 - tuple_float_picsize_resize[0]/2)),
-                              y = (0 if tuple_float_picsize_resize[2] == 1 else (200- tuple_float_picsize_resize[1]/2)))
-            # 贴图
-            label_video.configure(image=tkimage_1stframe)
-            label_video.image = tkimage_1stframe 
-            label_video.update() 
-        else :
-            print('视频加载失败')
-    else: # 当未选中视频
-        string_video_path = '' # 将此变量置空
+    global list_string_filename
+    global list_string_filepath
+    global bool_fdshis_exist
+    global bool_fdsimported
+    bool_fdsimported = NO
+    btns_change_f([btn_video_save, btn_win_init, text_info_videodetection, label_video, 
+    comb_filenames, btn_file_delete, btn_file_save, btn_file_edit], 3)
+    # fds文件引入按钮
+    btn_open.place(x=170, y=140) 
+    btn_open.config(image=tkimage_open) 
+    btn_open.config(state=NORMAL)
+    # video引入按钮
+    btn_play.place(x=460, y=140) 
+    btn_play.config(image=tkimage_play_f) 
+    btn_play.config(image=tkimage_play, state=DISABLED)
+    # 历史引入按钮
+    btn_fds_his.place(x=354, y=140)
+    bool_fdshis_exist, tmp_list = gethis_list_bool(1)
+    btn_fds_his.config(state=(NORMAL if bool_fdshis_exist else DISABLED)) # 设置点击模式
+    btn_video_his.place(x=418, y=282)
+    btn_video_his.config(state=DISABLED)
+    # 清空text控件内容
+    text_info_videodetection.delete(0.1, 'end')
 
 def btns_change_f(list_btns: list, mode: int):
     '''作为btn的状态修改函数
@@ -124,11 +136,12 @@ def btn_init():
     btn_file_edit.place(x=170, y=350) # 添加文件编辑按钮
     btn_file_delete.place(x=243 , y=350) # 添加文件删除按钮
     btn_file_save.place(x=316, y=350) # 添加fds文件组合保存按钮  
+    btns_change_f([btn_file_delete, btn_file_edit, btn_file_save], 2)
     btn_play.config(image=tkimage_play, state=NORMAL) # 更改播放按钮图标与状态
-    btn_video_his.config(state=(NORMAL if bool_videohis_exist else DISABLED))
+    btn_video_his.config(state=(NORMAL if gethis_list_bool(2)[1] else DISABLED))
     comb_filenames.place(x=170, y=325) # 将comb绑定到窗口
     # comb设置
-    list_string_filename = list(map(lambda x : x.split('/', 10)[-1], list_string_filepath))
+    list_string_filename = list(map(lambda x : x.strip().split('/', 10)[-1], list_string_filepath))
     comb_filenames['values'] = tuple(list_string_filename) # 设置comb值
     comb_filenames.current(0) # 设置当前comb选中项为0（index）
     comb_filenames.update() # update
@@ -143,14 +156,14 @@ def videoplay_init(path):
     if bool_isopened:
         # 页面改动
         btn_open.place(x=5, y=0)
-        comb_filenames.place(x=5, y=185)
         btn_file_edit.place(x=5, y=210)
         btn_file_delete.place(x=78, y=210)
         btn_file_save.place(x=151, y=210)
+        comb_filenames.place(x=5, y=185)
+        text_info_videodetection.place(x=5, y=250)
         btns_change_f([btn_play, btn_fds_his, btn_video_his],3)
-        text_info_videodetection.place(x=5, y=280)
-        text_insert_changeline(text_info_videodetection, 'Video readed successfully')
         btns_change_f(list_btns=[btn_open, btn_file_edit, btn_file_delete, btn_file_save], mode=1)
+        btn_win_init.place(x=5, y=470)
         # ndarray_image_1stframe = cv2.cvtColor(ndarray_image_1stframe, cv2.COLOR_BGR2BGRA) 
         # 获取视频图像信息
         tuple_image_info = ndarray_image_1stframe.shape
@@ -162,7 +175,7 @@ def videoplay_init(path):
         image_1st = Image.fromarray(ndarray_image_1stframe).resize(tuple_float_picsize_resize[:2]) 
         tkimage_1stframe = ImageTk.PhotoImage(image=image_1st)
         # 创建label
-        label_video = tk.Label(win_main, width=tuple_float_picsize_resize[0], height=tuple_float_picsize_resize[1], bd=0, bg='#333333')
+        # label_video = tk.Label(win_main, width=tuple_float_picsize_resize[0], height=tuple_float_picsize_resize[1], bd=0, bg='#333333')
         # 当原图缩放依据为height（即缩放后高满尺寸），此时宽度未达到600，应将图片在图片展示区域设置；当缩放依据为width时 同理
         label_video_x, label_video_y = ((194 if tuple_float_picsize_resize[2] == 0 else (494 - tuple_float_picsize_resize[0]/2)),
                                         (0 if tuple_float_picsize_resize[2] == 1 else (200- tuple_float_picsize_resize[1]/2)))
@@ -171,28 +184,39 @@ def videoplay_init(path):
         label_video.configure(image=tkimage_1stframe)
         label_video.image = tkimage_1stframe 
         label_video.update() 
+        text_insert_changeline(text_info_videodetection, 'Video readed successfully')
         # 添加关于视频检测信息展示的按钮
         btn_video_save.place(x = label_video_x, y = 410)
+        btn_videodetection_results.place(x = label_video_x, y = 460)
+        
     else:
         print("failed to read video")
 
 def btn_fds_his_f():
     global list_string_filepath
     global list_string_filename
-    with open(string_workcwd_file, 'r', encoding='utf-8') as f:
+    global bool_fdsimported
+    with open(string_path_fdshis_arti, 'r', encoding='utf-8') as f:
         list_string_filepath = f.readlines() # 修改fds路径列表
+        list_string_filepath.pop(0)
+        list_string_filepath = list(map(lambda x : x.strip(), list_string_filepath)) # 去除从his文件中读取的filepath后带的'\n'
         list_string_filename = list(map(lambda x : x.split('/', 10)[-1], list_string_filepath))
     if bool_fdsimported:
         # 当存在手动导入的fds文件，则当点击从历史记录读取时，应只修改comb值
         # 读取fdshis内的记录
-            comb_filenames['values'] = list_string_filename
-            comb_filenames.current(0)
-            comb_filenames.update()
+        comb_filenames['values'] = list_string_filename
+        comb_filenames.current(0)
+        comb_filenames.update()
     else:
         btn_init()
 
 def btn_video_his_f():
-    videoplay_init(list_string_videopath_his[-1])
+    global string_video_path
+    global string_videodec_results_path
+    string_video_path = list_string_videopath_his[-1]
+    string_videodec_results_path = string_video_path.replace(string_video_path.split('.')[-1], '_results')
+    # os.mkdir(string_videodec_results_path)
+    videoplay_init(string_video_path)
 
 def btn_file_edit_f():
     '''打开记事本查看编辑选中的fds文件
@@ -233,63 +257,65 @@ def btn_file_delete_f():
 def btn_file_save_f():
     '''存储当前选中fds文件路径
     '''
+    time_stamp_tmp = get_time_stamp()
+    save_videohis_auto(time_stamp_tmp, 1, list_string_filepath)
     if os.path.exists(string_workcwd_dir): # 当此路径存在 
-        with open(string_workcwd_file, 'w') as f:
+        with open(string_path_fdshis_arti, 'w') as f:
+            f.writelines(time_stamp_tmp + '\n')
             for i in list_string_filepath:
                 f.writelines(i + '\n')
     else: # 当此路径不存在则创建对应文件夹与文件
         os.mkdir(string_workcwd_dir)
-        with open(string_workcwd_file, 'w') as f:
+        with open(string_path_fdshis_arti, 'w') as f:
+            f.writelines(time_stamp_tmp + '\n')
             for i in list_string_filepath:
                 f.writelines(i + '\n')
     btn_fds_his.config(state=NORMAL)
 
+def btn_video_save_f():
+    time_stamp_tmp = get_time_stamp()
+    save_videohis_auto(time_stamp_tmp, 2, [string_video_path])
+    if os.path.exists(string_workcwd_dir): # 当此路径存在 
+        with open(string_path_videohis_arti, 'w') as f:
+            f.writelines(time_stamp_tmp + '\n')
+            f.writelines(string_video_path)
+    else: # 当此路径不存在则创建对应文件夹与文件
+        os.mkdir(string_workcwd_dir)
+        with open(string_path_videohis_arti, 'w') as f:
+            f.writelines(time_stamp_tmp + '\n')
+            f.writelines(string_video_path)
+
+def save_videohis_auto(timestamp:str, mode:int, pathlist:list):
+    '''自动存储用户选择的fds或者video文件
+
+    Parameters
+    ----------
+    timestamp : str
+        传入时间戳
+    mode : int
+        1-fds
+        2-video
+    pathlist : list
+        待写入文件路径集合
+    '''
+    str_path_tmp = string_path_fdshis_auto if mode==1 else string_path_videohis_auto
+    if os.path.exists(string_workcwd_dir): # 当此路径存在 
+        with open(str_path_tmp, 'a') as f:
+            f.writelines(timestamp + '\n')
+            for i in pathlist:
+                f.writelines(i + '\n')
+    else: # 当此路径不存在则创建对应文件夹与文件
+        os.mkdir(string_workcwd_dir)
+        with open(str_path_tmp, 'a') as f:
+            f.writelines(timestamp + '\n')
+            for i in pathlist:
+                f.writelines(i + '\n')
+            
 def btn_play_f():
     global string_video_path
     string_video_path = filedialog.askopenfilename() # 打开窗口选择视频，暂时不限制文件类型
     if string_video_path: # 当选中视频后
         videoplay_init(string_video_path)
-        '''
-        # 读取视频
-        video_tobeplayed = cv2.VideoCapture(string_video_path)
-        int_frame_count = int(video_tobeplayed.get(cv2.CAP_PROP_FRAME_COUNT)) # 帧数
-        bool_isopened, ndarray_image_1stframe = video_tobeplayed.read() # 获取视频第一帧
-        if bool_isopened:
-            # 页面改动
-            btn_open.place(x=5, y=0)
-            comb_filenames.place(x=5, y=185)
-            btn_file_edit.place(x=5, y=210)
-            btn_file_delete.place(x=78, y=210)
-            btn_file_save.place(x=151, y=210)
-            btns_change_f([btn_play, btn_fds_his, btn_video_his],3)
-            text_info_videodetection.place(x=5, y=280)
-            text_insert_changeline(text_info_videodetection, 'Video readed successfully')
-            btns_change_f(list_btns=[btn_open, btn_file_edit, btn_file_delete, btn_file_save], mode=1)
-            # ndarray_image_1stframe = cv2.cvtColor(ndarray_image_1stframe, cv2.COLOR_BGR2BGRA) 
-            # 获取视频图像信息
-            tuple_image_info = ndarray_image_1stframe.shape
-            int_frame_width = tuple_image_info[1]
-            int_frame_height = tuple_image_info[0] 
-            # 对图像进行缩放
-            tuple_float_picsize_resize = tuple(map(int, resizepicandlabel((int_frame_width, int_frame_height), (600, 400)))) 
-            # ndarray_image_1stframe = cv2.resize(ndarray_image_1stframe, tuple_float_picsize_resize,interpolation=cv2.INTER_NEAREST) # 采用最近邻插值法缩放图片
-            image_1st = Image.fromarray(ndarray_image_1stframe).resize(tuple_float_picsize_resize[:2]) 
-            tkimage_1stframe = ImageTk.PhotoImage(image=image_1st)
-            # 创建label
-            label_video = tk.Label(win_main, width=tuple_float_picsize_resize[0], height=tuple_float_picsize_resize[1], bd=0, bg='#333333')
-            # 当原图缩放依据为height（即缩放后高满尺寸），此时宽度未达到600，应将图片在图片展示区域设置；当缩放依据为width时 同理
-            label_video_x, label_video_y = ((194 if tuple_float_picsize_resize[2] == 0 else (494 - tuple_float_picsize_resize[0]/2)),
-                                            (0 if tuple_float_picsize_resize[2] == 1 else (200- tuple_float_picsize_resize[1]/2)))
-            label_video.place(x=label_video_x, y=label_video_y)
-            # 贴图
-            label_video.configure(image=tkimage_1stframe)
-            label_video.image = tkimage_1stframe 
-            label_video.update() 
-            # 添加关于视频检测信息展示的按钮
-            btn_video_save.place(x = label_video_x, y = 410)
-        else :
-            print('视频加载失败')
-        '''
     else: # 当未选中视频
         string_video_path = '' # 将此变量置空
 
@@ -333,17 +359,7 @@ def resizepicandlabel(imagesize: list, labelsize: list):
     return ((int_frame_width / float_proportion_width, int_frame_height / float_proportion_width, 0) if float_proportion_width > float_proportion_heigth else (int_frame_width / float_proportion_heigth, int_frame_height / float_proportion_heigth, 1))
        
 def test_func2():
-    if os.path.exists(string_workcwd_video) : # 当该his文件存在时
-        with open(string_workcwd_video, 'a') as f: 
-            f.writelines(string_video_path + '\n') # 直接写入
-    else: # 当该文件不存在时
-        if os.path.exists(string_workcwd_dir) : # 若work文件夹存在 
-            with open(string_workcwd_video, 'w') as f: # 则直接创建该文件 并写入
-                f.writelines(string_video_path + '\n')
-        else :
-            os.mkdir(string_workcwd_dir)
-            with open(string_workcwd_video, 'w') as f: 
-                f.writelines(string_video_path + '\n')
+    text_info_videodetection.delete(1.0, 'end')
 
 def text_insert_changeline(text:tkinter.Text, line:str):
     '''输入文字到Text控件并换行
@@ -358,25 +374,59 @@ def text_insert_changeline(text:tkinter.Text, line:str):
     text.insert(tk.INSERT, line)
     text.insert(tk.INSERT, '\n')
 
+def gethis_list_bool(mode:int):
+    '''判断是否存在历史值
+
+    Parameters
+    ----------
+    mdoe : int
+        1-fds
+        2-video
+    '''
+    tmp_list = []
+    tmp_string_his_path = string_path_fdshis_arti if mode == 1 else string_path_videohis_arti
+    if os.path.exists(tmp_string_his_path) :
+        with open(tmp_string_his_path, 'r') as f:
+            tmp_list = f.readlines()
+        return YES if len(tmp_list) > 0 else NO, tmp_list
+    else:
+        return NO, []
+
+def btn_win_init_f():
+    global list_string_filename
+    global list_string_filepath
+    global bool_fdshis_exist
+    global bool_fdsimported
+    bool_fdsimported = NO
+    btns_change_f([btn_video_save, btn_win_init, text_info_videodetection, label_video, 
+    comb_filenames, btn_file_delete, btn_file_save, btn_file_edit], 3)
+    # fds文件引入按钮
+    btn_open.place(x=170, y=140) 
+    btn_open.config(image=tkimage_open) 
+    btn_open.config(state=NORMAL)
+    # video引入按钮
+    btn_play.place(x=460, y=140) 
+    btn_play.config(image=tkimage_play_f) 
+    btn_play.config(image=tkimage_play, state=DISABLED)
+    # 历史引入按钮
+    btn_fds_his.place(x=354, y=140)
+    bool_fdshis_exist, tmp_list = gethis_list_bool(1)
+    btn_fds_his.config(state=(NORMAL if bool_fdshis_exist else DISABLED)) # 设置点击模式
+    btn_video_his.place(x=418, y=282)
+    btn_video_his.config(state=DISABLED)
+    # 清空text控件内容
+    text_info_videodetection.delete(1.0, 'end')
+
 # 查看是否存在工作目录
-string_workcwd_dir = os.getcwd() + '\\work'
-print(string_workcwd_dir)
-string_workcwd_file = os.getcwd() + '\\work\\fdshis.txt' # 获取并创建历史工作文件夹路径
-string_workcwd_video = os.getcwd() + '\\work\\videohis.txt'
 # 当此文件不存在也不需要在程序初始化时创建，因为后续函数会再次确认此文件是否存在，当不存在时，彼时再行创建
-if os.path.exists(string_workcwd_file) :
-    with open(string_workcwd_file, 'r') as f:
-        list_string_filepath = f.readlines()
-if os.path.exists(string_workcwd_video) :
-    with open(string_workcwd_video, 'r') as f:
-        list_string_videopath_his = f.readlines() 
-bool_fdshis_exist = (YES if len(list_string_filepath) > 0 else NO)
-bool_videohis_exist = (YES if len(list_string_videopath_his) else NO)
+bool_fdshis_exist,  list_string_filepath= gethis_list_bool(1)
+bool_videohis_exist,  list_string_videopath_his= gethis_list_bool(2)
+
 
 # 窗口初始化
 win_main = tk.Tk()
 win_main.title('demo1')
-win_main.geometry('800x500')
+win_main.geometry('800x510')
 win_main['bg'] = 'white' 
 win_main.resizable(False, False)
 
@@ -423,10 +473,14 @@ btn_file_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=
 
 # 视频功能按钮
 # 保存此视频地址，沿用保存fds文件路径地址的图标
-btn_video_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=test_func2)
+btn_video_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_video_save_f)
 # 打开视频检测结果文件夹按钮
-tkimage_openinfolder = image2tk('A://tkinter/code//icon2//folder.png', (32, 32))
-btn_video_results = tk.Button(win_main, image=tkimage_openinfolder, cursor='hand2', command=test_func2)
+tkimage_openinfolder = image2tk('A://tkinter/code//icon2//folder.png', (30, 32))
+btn_videodetection_results = tk.Button(win_main, image=tkimage_openinfolder, cursor='hand2', command=test_func2)
+
+# 窗口复原按钮图标
+tkimage_win_init = image2tk('A://tkinter//code//icon2//previsous.png', (32,32))
+btn_win_init = tk.Button(win_main, image=tkimage_win_init, cursor='hand2', command=test_func)
 
 # 创建comb，此comb在选择按钮被点击并存在选择项是才被加载窗口中
 tkstringvar_filepath = tkinter.StringVar() # 创建StringVar储存文件名
@@ -438,7 +492,8 @@ string_comb_curitem = comb_filenames.get()
 text_info_videodetection = tk.Text(win_main, width=26, height=16, relief=RIDGE, bg='#F5F5F5')
 text_info_videodetection.bind("<Key>", lambda a: "break")
 
-
+# 创建视频label
+label_video = tk.Label(win_main, bd=0, bg='#333333')
 
 
 win_main.mainloop()

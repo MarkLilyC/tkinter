@@ -1,9 +1,17 @@
+'''
+Author: your name
+Date: 2021-09-12 13:07:45
+LastEditTime: 2021-09-14 16:36:24
+LastEditors: Please set LastEditors
+Description: In User Settings Edit
+FilePath: \code\fds_run.py
+'''
 import os
 import sys
-import _io
+import io
 
 
-def bat_write(p: _io.TextIOWrapper, fds_path: str):
+def bat_write(p: io.TextIOWrapper, fds_path: str):
     """
     书写fds、smokeview的运行bat文件
     :param p: 需要写入的bat文件的io
