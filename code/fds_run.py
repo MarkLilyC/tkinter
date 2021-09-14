@@ -1,11 +1,3 @@
-'''
-Author: your name
-Date: 2021-09-12 13:07:45
-LastEditTime: 2021-09-14 16:36:24
-LastEditors: Please set LastEditors
-Description: In User Settings Edit
-FilePath: \code\fds_run.py
-'''
 import os
 import sys
 import io

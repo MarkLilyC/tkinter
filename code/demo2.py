@@ -38,6 +38,10 @@ string_path_fdshis_arti = os.getcwd() + '\\work\\fdshis.txt' # 获取并创建�
 string_path_fdshis_auto = os.getcwd() + '\\work\\fdshis_all.txt' # 获取并创建历史工作文件夹路径
 string_path_videohis_arti = os.getcwd() + '\\work\\videohis.txt'
 string_path_videohis_auto = os.getcwd() + '\\work\\videohis_all.txt'
+string_path_backgroud = '' # 存储背景图像地址
+list_string_path_frame = [] # 存储截取的原始图像地址
+list_string_path_frame_dst = [] # 存储生成检测结果图像地址
+
 
 def import_fdsfiles():
     # 声明为全局变量

@@ -32,15 +32,15 @@ def video_read(string_video_path:str, int_capread_delay:int, int_initread_delay:
 
     Returns
     -------
-    list
-        结果文件夹， 原始图片文件夹
+        1：str：此视频结果文件路径
+        2：list[str1,str2,....]：截取图片文件路径
     '''
     time_stamp = datetime.datetime.now()
     time_stamp = time_stamp.strftime('%m-%d-%H-%M')
     str_resfolder = string_video_path.replace(string_video_path.split('.')[1], 'res-')
-    str_resfolder += time_stamp
+    str_resfolder += time_stamp # 结果文件文件夹
     os.mkdir(str_resfolder)
-    str_resfolder_oripics = str_resfolder + '//oripics'
+    str_resfolder_oripics = str_resfolder + '//results' # 结果图片文件夹
     os.mkdir(str_resfolder_oripics)
     list_path_pics = []
     cap = cv2.VideoCapture(string_video_path)
@@ -63,12 +63,12 @@ def video_read(string_video_path:str, int_capread_delay:int, int_initread_delay:
     return str_resfolder, list_path_pics
 
 def subFiltter(img, filtter: int):
-    """
-    输入图片将其按阈值过滤
-    :param img: 源图片（灰度图）
-    :param filtter: 阈值
-    :return: 无返回值，在原图片基础上修改
-    """
+    '''图片过滤器
+
+    Args:
+        img (ndarray): 待过滤图片
+        filtter (int): 过滤阈值
+    '''
     imginfo = img.shape
     hei = imginfo[0]
     wid = imginfo[1]
@@ -80,13 +80,17 @@ def subFiltter(img, filtter: int):
             else:
                 continue
 
-def subGetBack(img1_path: str, img2_path):
-    """
-    输入图片得到背景
-    :param img1: pic1
-    :param img2: pic2
-    :return: 背景图片
-    """
+def subGetBack(img1_path: str, img2_path: str, res_path: str):
+    '''根据原始图像获得背景
+
+    Args:
+        img1_path (str): 原图1地址
+        img2_path (str): 原图2地址
+        res_path (str): 结果文件夹地址
+
+    Returns:
+        背景图像(ndarray): 背景图像
+    '''
     # 图片相减
     img1 = cv2.imread(img1_path, 0)
     img2 = cv2.imread(img2_path, 0)
@@ -183,20 +187,22 @@ def subGetBack(img1_path: str, img2_path):
             img1[i, j] = img2[i, j]
         else:
             img2[i, j] = img1[i, j]
-    tmp = img1_path.split('c', 1)
-    cv2.imwrite(tmp[0] + 'back.jpg', img2)
+    tmp = res_path + '\\background.jpg'
+    cv2.imwrite(tmp, img2)
     return img2
 
+def person_count(background:np.ndarray, img1_path:str):
+    '''1-输入待识别图像与背景图像识别以识别人数
+       2-将
+    Args:
+        background (ndarray): 背景图像
+        img1_path (ndarray): 待识别图像
 
-def person_count(background, img1_path):
-    """
-    输入背景，按帧识别人数
-    :param background:背景
-    :param img1: 待处理帧路径
-    :return: 返回人数
-    """
-    list1 = img1_path.split('.', 1)
-    path = list1[0] + '_C' + list1[1]
+    Returns:
+        int: 识别人数
+    '''
+    path_whitebg = img1_path.replace('.jpg','dst_nobg.jpg')
+    path_realbg = img1_path.replace('.jpg','dst_bg.jpg')
     img1 = cv2.imread(img1_path, 0)
     # 读取shape
     imgInfo = img1.shape
@@ -231,8 +237,9 @@ def person_count(background, img1_path):
             (x, y, w, h) = cv2.boundingRect(i)
             counts += 1
             cv2.rectangle(dst2, (x, y), (x + w, y + h), (0, 0, 0), 2)
-    cv2.imwrite(path, dst2)
-    cv2.imwrite(img1_path+'.jpg', dst2)
+            cv2.rectangle(img1, (x, y), (x + w, y + h), (0, 0, 0), 2)
+    cv2.imwrite(path_realbg, img1)
+    cv2.imwrite(path_whitebg, dst2)
     return counts
 
 
@@ -248,9 +255,18 @@ def counts(list_path, background):
         list_person.append(person_count(background, i))
     return list_person
 
-def cal(list_path_pics):
+def cal(res_path:str, list_path_pics:str):
+    '''行人检测,人数计数
+    Args:
+        list_path_pics (str): 截取图片地址
+        res_path (str): 结果文件文件夹地址
+
+    Returns:
+        tuple: (1-list:人数列表
+                2-ndarray:背景图像)
+    '''
     # 计算背景
-    back = subGetBack(list_path_pics[0], list_path_pics[10])
+    back = subGetBack(list_path_pics[0], list_path_pics[10],res_path=res_path)
     print('背景合成完成')
     per_nums_list = counts(list_path_pics, back)
     # per_nums_list = [5, 3, 1, 2, 3, 2, 2, 1, 3, 3, 1, 1]
@@ -258,5 +274,5 @@ def cal(list_path_pics):
     print(per_nums_list)  # [5, 3, 1, 2, 3, 2, 2, 1, 3, 3, 1, 1]
     return per_nums_list, back
 
-a, l = video_read('A:/tkinter/code/pets.mp4',50, 10)
-per_nums_list, back = cal(l)
+a, l = video_read('A://tkinter//code//pets.mp4',50, 10)
+per_nums_list, back = cal(a, l)
