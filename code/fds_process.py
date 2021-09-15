@@ -1,23 +1,22 @@
 import os
-import sys
+import subprocess
 import io
-import datetime
+import time
 from tkinter.constants import YES
+import ana_excel
 
-def get_headchid(fds_path: str):
+def get_headchid(fds_lines: list):
     '''找出fds文件的headchid
 
     Args:
-        fds_path (str): fds文件路径
+        fds_lines (list): fds文件行内容
 
     Returns:
         str: 指定fds文件的headchid
     '''
-    with open(fds_path, 'r', encoding='UTF-8') as p:
-        list_string_fdslines = p.readlines()
-        for i in list_string_fdslines:
-            if i.find('HEAD') == 1:
-                return i.split('\'')[1]
+    for i in fds_lines:
+        if i.find('HEAD') == 1:
+            return i.split('\'')[1]
 
 def bat_write(p:io.TextIOWrapper, fds_path:str):
     '''用于生成.bat文件
@@ -38,17 +37,16 @@ def bat_write(p:io.TextIOWrapper, fds_path:str):
     p.write('\\' + '\n')
     return 1
 
-def create_run_bat(fds_path:str, mode:str):
+def create_run_bat(fds_path:str, mode:str, string_fdshead:str):
     '''为fds与smokeview创建.bat运行文件
 
     Args:
         fds_path (str): 需要创建运行文件的fds路径
-        mode (str): 1-fds,2-smokeview  
+        mode (str): 1-fds,2-smokeview  '
+        string_fdshead (str) : 当前fds文件的headchid
     Returns:
         str: 返回生成的.bat文件路径
     '''
-    # 找出当前路径fds文件的head chid
-    string_fdshead = get_headchid(fds_path=fds_path)
     # 生成.bat文件路径
     string_bat_path = fds_path.replace('.fds', '-fds.bat' if mode == 1 else '-smv.bat')
     with open(string_bat_path, 'w', encoding='UTF-8') as p:
@@ -61,7 +59,7 @@ def create_run_bat(fds_path:str, mode:str):
     p.close()
     return string_bat_path
 
-def create_folders(fds_path:str, case_num:int):
+def create_folders(list_fds_path:list):
     '''在当前选中的fds文件的目录下创建一个含时间戳的文件夹用于存储后续计算结果
     在该文件夹内,含有case_num个子文件夹(名为STR-i),每个文件夹代表一个选中的fds
     文件,在该文件夹内后续会写入新的子文件夹(NUM-i)用于存储该fds文件(策略)下不同
@@ -74,15 +72,17 @@ def create_folders(fds_path:str, case_num:int):
     Returns:
         list:string-用于存储各个case的运行结果
     ''' 
-    list_fdspath_part = fds_path.split('\\', 15)
-    time_stamp = datetime.datetime.now().strftime('%m-%d-%h-%M')
+    fds_path = list_fds_path[0]
+    now = int(round(time.time()*1000))
+    time_stamp = time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(now/1000))
     string_folder_path = fds_path.replace('.fds', time_stamp)
-    string_evacres_plot_folderpath = string_folder_path + 'evac_res_plot'
+    string_folder_path = fds_path.replace(fds_path.split('\\',10)[-1], time_stamp)
+    string_evacres_plot_folderpath = string_folder_path + '\\evac_res_plot'
     os.mkdir(string_folder_path)
     os.mkdir(string_evacres_plot_folderpath)
     tmp_str_path = string_folder_path + '\\'
     list_string_path = []
-    for i in range(case_num):
+    for i in range(len(list_fds_path)):
         os.mkdir(tmp_str_path + 'STR-' + str(i))
         list_string_path.append(tmp_str_path + 'STR-' + str(i)) 
     return list_string_path
@@ -138,17 +138,18 @@ def fds_duplicate_s(case_folder_path: str, fds_path: str, per_nums_list: list):
     :param per_nums_list: 需要写入的人数list
     :return:返回新生成的fds文件的路径list
     """
-    list_string_fdsbat_listr = '' # .bat文件路径list
+    list_string_fdsbat_listr = [] # .bat文件路径list
     with open(fds_path, 'r', encoding='UTF-8') as p :
         fds_lines = p.readlines()
     p.close()
-    string_headchid = get_headchid
-    tmp_int_index = 0
-    for i in fds_lines:
-        string_newfds_folderpath = case_folder_path + '\\NUM-' + str(tmp_int_index) # 当前fds源文件下(策略下)个人数条件下的fds文件夹
+    string_headchid = get_headchid(fds_lines) # 找出headchid
+    for i in range(len(per_nums_list)):
+        string_newfds_folderpath = case_folder_path + '\\NUM-' + str(i) # 当前fds源文件下(策略下)个人数条件下的fds文件夹
         os.mkdir(string_newfds_folderpath)
-        string_new_fds = string_newfds_folderpath + '\\' + 
-
+        string_new_fds_path = string_newfds_folderpath + '\\' + string_headchid + '.fds'
+        fds_duplicate(string_new_fds_path, fds_lines, change_line(per_nums_list[i]))
+        list_string_fdsbat_listr.append(create_run_bat(string_new_fds_path, 1, string_headchid))
+    return list_string_fdsbat_listr
     '''list_string_fdsbat_path = []  # .bat文件路径list
     new_fds_folder_path_list = []
     fds_io = open(fds_path, 'r')  # fds源文件的io，用于复制
@@ -162,5 +163,30 @@ def fds_duplicate_s(case_folder_path: str, fds_path: str, per_nums_list: list):
         list_string_fdsbat_path.append(create_run_bat(new_fds_path, 1))
     return list_string_fdsbat_path'''
 
+def fds_bats_run(fds_run_paths: list):
+    """
+    运行fds以及smokeview的bat文件
+    :param fds_run_paths: fds的运行文件路径list
+    :return: 0
+    """
+    for i in range(len(fds_run_paths)):
+        p = subprocess.Popen(
+            "cmd.exe /c" + fds_run_paths[i],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        cur_line = p.stdout.readline()
+        while cur_line != b'':
+            print(cur_line)
+            cur_line = p.stdout.readline()
+    return 0
 
 # a = create_folders('A:\\tkinter\\code\\fds\\case0_all.fds', 10)
+'''list_string_fds_path = ['A:\\tkinter\\code\\fds\\case0_all.fds','A:\\tkinter\\code\\fds\\case0_left.fds','A:\\tkinter\\code\\fds\\case0_right.fds' ] 
+list_int_pernum = [1,2,3]
+list_string_newfolderpath = create_folders(list_string_fds_path)
+list_list_string_fdsbatpath = []
+for i in range(len(list_string_fds_path)):
+    tmp =  fds_duplicate_s(list_string_newfolderpath[i], list_string_fds_path[i],list_int_pernum)
+    list_list_string_fdsbatpath.append(tmp)
+for i in list_list_string_fdsbatpath:
+    fds_bats_run(i)
+'''

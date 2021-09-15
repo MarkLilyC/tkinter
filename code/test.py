@@ -120,5 +120,7 @@ def fds_duplicate_s(case_folder_path: str, fds_path: str, per_nums_list: list):
     return fds_run_paths     
 
 if __name__ == '__main__':
-    a = creat_folders('A:\\tkinter\\code\\fds\\case0_all.fds', 10)
-    print(a, a.__class__)
+    a = []
+    for i in range(4):
+        a.append(i)
+    print(a)

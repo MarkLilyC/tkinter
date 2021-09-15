@@ -18,10 +18,8 @@ import win32api
 import os
 import cv2
 import time
-import fds_write
-import numpy
-import fds_run
-import sub_find_Back
+from tkinter import scrolledtext
+import numpy as np
 
 # 声明一些变量
 list_string_filepath = [] # 存储选中的FDS路径
@@ -41,6 +39,13 @@ string_path_videohis_auto = os.getcwd() + '\\work\\videohis_all.txt'
 string_path_backgroud = '' # 存储背景图像地址
 list_string_path_frame = [] # 存储截取的原始图像地址
 list_string_path_frame_dst = [] # 存储生成检测结果图像地址
+list_int_person_num = []
+int_initread_delay = 100
+int_capread_delay = 100
+int_frame_count = 0
+tuple_float_picsize_resize = ()
+tuple_float_picsize_resize_2 = ()
+bool_auto_detect = NO
 
 
 def import_fdsfiles():
@@ -65,7 +70,7 @@ def get_time_stamp():
         时间戳：年月日 时分秒
     '''
     now = int(round(time.time()*1000))
-    time_stamp = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(now/1000))
+    time_stamp = time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(now/1000))
     return time_stamp
 
 def test_func():
@@ -153,10 +158,14 @@ def btn_init():
     string_comb_curitem = comb_filenames.get() # 赋值为当前选中
     bool_fdsimported = YES
 
-def videoplay_init(path):
+def videoplay_init(path): 
+    global tuple_float_picsize_resize
+    global tuple_float_picsize_resize_2
+    global int_frame_count
     video_tobeplayed = cv2.VideoCapture(path)
     int_frame_count = int(video_tobeplayed.get(cv2.CAP_PROP_FRAME_COUNT)) # 帧数
     bool_isopened, ndarray_image_1stframe = video_tobeplayed.read() # 获取视频第一帧
+    ndarray_image_1stframe = cv2.cvtColor(ndarray_image_1stframe, cv2.COLOR_BGR2RGBA)
     if bool_isopened:
         # 页面改动
         btn_open.place(x=5, y=0)
@@ -165,6 +174,8 @@ def videoplay_init(path):
         btn_file_save.place(x=151, y=210)
         comb_filenames.place(x=5, y=185)
         text_info_videodetection.place(x=5, y=250)
+        btn_video_save.place(x = 220, y = 410)
+        btn_videodetection_results.place(x = 220, y = 460)
         btns_change_f([btn_play, btn_fds_his, btn_video_his],3)
         btns_change_f(list_btns=[btn_open, btn_file_edit, btn_file_delete, btn_file_save], mode=1)
         btn_win_init.place(x=5, y=470)
@@ -175,6 +186,8 @@ def videoplay_init(path):
         int_frame_height = tuple_image_info[0] 
         # 对图像进行缩放
         tuple_float_picsize_resize = tuple(map(int, resizepicandlabel((int_frame_width, int_frame_height), (600, 400)))) 
+        tuple_float_picsize_resize_2 = tuple(map(int, resizepicandlabel((int_frame_width, int_frame_height), (123, 82)))) 
+    
         # ndarray_image_1stframe = cv2.resize(ndarray_image_1stframe, tuple_float_picsize_resize,interpolation=cv2.INTER_NEAREST) # 采用最近邻插值法缩放图片
         image_1st = Image.fromarray(ndarray_image_1stframe).resize(tuple_float_picsize_resize[:2]) 
         tkimage_1stframe = ImageTk.PhotoImage(image=image_1st)
@@ -188,13 +201,20 @@ def videoplay_init(path):
         label_video.configure(image=tkimage_1stframe)
         label_video.image = tkimage_1stframe 
         label_video.update() 
-        text_insert_changeline(text_info_videodetection, 'Video readed successfully')
-        # 添加关于视频检测信息展示的按钮
-        btn_video_save.place(x = label_video_x, y = 410)
-        btn_videodetection_results.place(x = label_video_x, y = 460)
+        # 
+        text_insert_changeline(text_info_videodetection, '视频读取成功')
+        label_show_back.place(x=266, y=410)
         
+        int_label_showre_x = 266 + tuple_float_picsize_resize_2[0] + 10
+        label_show_res.place(x=int_label_showre_x, y=410)
+        tree_info.insert("", 0, text="line1", values=(int_frame_count, int_initread_delay, int_capread_delay, '--'))    # #给第0行添加数据，索引值可重复
+        tree_info.place(x=int_label_showre_x + tuple_float_picsize_resize_2[0] + 10, y=440)
+        # 添加关于视频检测信息展示的按钮
+        # 进行fds文件的准备工作
+        return YES
     else:
-        print("failed to read video")
+        text_insert_changeline(text_info_videodetection, "视频读取失败")
+        return NO
 
 def btn_fds_his_f():
     global list_string_filepath
@@ -217,10 +237,36 @@ def btn_fds_his_f():
 def btn_video_his_f():
     global string_video_path
     global string_videodec_results_path
+    global bool_if_videoopened
+    global tuple_float_picsize_resize
+    tuple_folat_labelsize = tuple_float_picsize_resize[:2]
     string_video_path = list_string_videopath_his[-1]
     string_videodec_results_path = string_video_path.replace(string_video_path.split('.')[-1], '_results')
     # os.mkdir(string_videodec_results_path)
-    videoplay_init(string_video_path)
+    bool_if_videoopened = videoplay_init(string_video_path)
+    label_show_back.place(x=266, y=410)
+    int_label_showre_x = 266 + tuple_float_picsize_resize_2[0] + 10
+    label_show_res.place(x=int_label_showre_x, y=410)
+    tree_info.insert("", 0, text="line1", values=(int_frame_count, int_initread_delay, int_capread_delay, '--'))    # #给第0行添加数据，索引值可重复
+    tree_info.place(x=int_label_showre_x + tuple_float_picsize_resize_2[0] + 10, y=410)
+    if bool_if_videoopened:
+        time.sleep(1)
+        string_resfolder_path, list_string_pics_path = get_video_frame(string_video_path, label_video, tuple_folat_labelsize)
+        # 开始人员计数
+        tmp_int_index = int(len(list_string_pics_path)/2)
+        ndarray_back = subGetBack(list_string_pics_path[0], list_string_pics_path[tmp_int_index], string_resfolder_path)
+        if ndarray_back is not NONE:
+            video_play(ndarray_back, label_video, tuple_folat_labelsize)
+            text_insert_changeline(text_info_videodetection, "背景合成完成")
+            for i in list_string_pics_path:
+                int_per_num, ndarray_deection_res = person_count(ndarray_back, i)
+                video_play(ndarray_deection_res, label_video, tuple_folat_labelsize)
+                list_int_person_num.append(int_per_num)
+                text_insert_changeline(text_info_videodetection,'第' + i.split('_', 5)[-1].replace('.jpg', '帧检测完成'))
+            text_insert_changeline(text_info_videodetection, '行人计数完成')
+            text_insert_changeline(text_info_videodetection, '开始疏散模拟')
+    else:
+        text_insert_changeline(text_info_videodetection, "视频打开失败")
 
 def btn_file_edit_f():
     '''打开记事本查看编辑选中的fds文件
@@ -317,9 +363,54 @@ def save_videohis_auto(timestamp:str, mode:int, pathlist:list):
             
 def btn_play_f():
     global string_video_path
+    global list_string_filepath
+    global list_int_person_num
     string_video_path = filedialog.askopenfilename() # 打开窗口选择视频，暂时不限制文件类型
     if string_video_path: # 当选中视频后
-        videoplay_init(string_video_path)
+        bool_if_videoopened = videoplay_init(string_video_path)
+        label_show_back.place(x=266, y=410)
+        int_label_showre_x = 266 + tuple_float_picsize_resize_2[0] + 10
+        label_show_res.place(x=int_label_showre_x, y=410)
+        tree_info.insert("", 0, text="line1", values=(int_frame_count, int_initread_delay, int_capread_delay, '--'))    # #给第0行添加数据，索引值可重复
+        tree_info.place(x=int_label_showre_x + tuple_float_picsize_resize_2[0] + 10, y=410)
+        time.sleep(1)
+        tuple_folat_labelsize = tuple_float_picsize_resize[:2]
+        if bool_if_videoopened:
+            string_resfolder_path, list_string_pics_path = get_video_frame(string_video_path, label_video, tuple_folat_labelsize)
+            # 开始人员计数
+            tmp_int_index = int(len(list_string_pics_path)/2)
+            ndarray_back = subGetBack(list_string_pics_path[0], list_string_pics_path[tmp_int_index], string_resfolder_path)
+            if ndarray_back is not NONE:
+                video_play(ndarray_back, label_video, tuple_folat_labelsize)
+                image_back = Image.fromarray(ndarray_back).resize(tuple_float_picsize_resize_2[:2]) 
+                tkimage_backframe = ImageTk.PhotoImage(image=image_back)
+                # 创建label
+                # label_video = tk.Label(win_main, width=tuple_float_picsize_resize[0], height=tuple_float_picsize_resize[1], bd=0, bg='#333333')
+                # 当原图缩放依据为height（即缩放后高满尺寸），此时宽度未达到600，应将图片在图片展示区域设置；当缩放依据为width时 同理
+                '''label_show_x, label_show_y = ((255 if tuple_float_picsize_resize_2[2] == 0 else (316 - tuple_float_picsize_resize_2[0]/2)),
+                                                (410 if tuple_float_picsize_resize_2[2] == 1 else (492- tuple_float_picsize_resize_2[1]/2)))
+                label_show_x = label_show_x if label_show_x-242 < 6 else 255
+                label_show_2_x, label_show_2_y = ((383 if tuple_float_picsize_resize_2[2] == 0 else (444 - tuple_float_picsize_resize_2[0]/2)),
+                                                (410 if tuple_float_picsize_resize_2[2] == 1 else (492- tuple_float_picsize_resize_2[1]/2)))
+                label_show_2_x = label_show_2_x if label_show_2_x-(label_show_x+tuple_float_picsize_resize_2[0]) < 6 else label_show_x+tuple_float_picsize_resize_2[0] + 5'''
+    
+                # 贴图
+                label_show_back.configure(image=tkimage_backframe)
+                label_show_back.image = tkimage_backframe 
+                label_show_back.update()
+                text_insert_changeline(text_info_videodetection, "背景合成完成")
+                for i in list_string_pics_path:
+                    int_per_num, ndarray_deection_res = person_count(ndarray_back, i)
+                    video_play(ndarray_deection_res, label_video, tuple_folat_labelsize)
+                    video_play(ndarray_deection_res, label_show_res, tuple_float_picsize_resize_2[:2])
+                    list_int_person_num.append(int_per_num)
+                    tmp = i.split('_', 5)[-1].replace('.jpg', '')
+                    text_insert_changeline(text_info_videodetection,'第' + tmp + '帧检测完成')
+                    tree_info.insert("", 0, text="line1", values=(int_frame_count, int_initread_delay, int_capread_delay, tmp)) 
+                text_insert_changeline(text_info_videodetection, '行人计数完成')
+                text_insert_changeline(text_info_videodetection, '开始疏散模拟')
+        else:
+            text_insert_changeline(text_info_videodetection, '视频打开失败')
     else: # 当未选中视频
         string_video_path = '' # 将此变量置空
 
@@ -377,6 +468,7 @@ def text_insert_changeline(text:tkinter.Text, line:str):
     ''' 
     text.insert(tk.INSERT, line)
     text.insert(tk.INSERT, '\n')
+    text.see(END)
 
 def gethis_list_bool(mode:int):
     '''判断是否存在历史值
@@ -403,7 +495,8 @@ def btn_win_init_f():
     global bool_fdsimported
     bool_fdsimported = NO
     btns_change_f([btn_video_save, btn_win_init, text_info_videodetection, label_video, 
-    comb_filenames, btn_file_delete, btn_file_save, btn_file_edit], 3)
+    comb_filenames, btn_file_delete, btn_file_save, btn_file_edit, btn_videodetection_results,
+    label_show_back, label_show_res], 3)
     # fds文件引入按钮
     btn_open.place(x=170, y=140) 
     btn_open.config(image=tkimage_open) 
@@ -421,6 +514,263 @@ def btn_win_init_f():
     # 清空text控件内容
     text_info_videodetection.delete(1.0, 'end')
 
+def get_video_frame(video_path:str, label:tk.Label, re_size:tuple):
+    '''从视频中截取图片，加载到label上
+
+    Args:
+        video_path (str): 视频路径
+        label (tk.Label): 放置图片的label
+        re_size (tuple): label的尺寸(width, height)
+    '''
+    time_stamp = get_time_stamp()
+    str_resfolder = video_path.replace(video_path.split('.')[1], 'res-')
+    str_resfolder += time_stamp # 结果文件文件夹
+    os.mkdir(str_resfolder)
+    str_resfolder_oripics = str_resfolder + '//results' # 结果图片文件夹
+    os.mkdir(str_resfolder_oripics)
+    list_path_pics = []
+    cap = cv2.VideoCapture(video_path)
+    flag = cap.isOpened()
+    c = 1
+    while flag:
+        ret, ndarray_pic = cap.read()
+        if ret:
+            if (c-int_initread_delay) % int_capread_delay == 0:
+                ndarray_pic = cv2.cvtColor(ndarray_pic, cv2.COLOR_BGR2RGBA)
+                tmp_pic_path = str_resfolder_oripics + "//capture_image_" + str(c) + '.jpg'
+                text_insert_changeline(text_info_videodetection, "开始截取视频第：" + str(c+int_initread_delay) + " 帧")
+                ndarray_pic_res = video_play(ndarray_pic, label, re_size)
+                cv2.imwrite(tmp_pic_path, ndarray_pic_res)
+                list_path_pics.append(tmp_pic_path)
+            c += 1
+            cv2.waitKey(0)
+        else:
+            text_insert_changeline(text_info_videodetection, "所有帧都已经保存完成")
+            text_insert_changeline(text_info_videodetection, "视频截取成功")
+            text_insert_changeline(text_info_videodetection, "开始行人检测计数")
+            break
+    cap.release()
+    # string_res_folderpath, list_video_frames_path = video_detection.video_read(string_video_path, 50, 10)
+    return str_resfolder, list_path_pics
+
+def video_play(pic:np.ndarray, label:tk.Label,re_size:tuple):
+    '''将图片加载到label上，达到播放视频的效果
+
+    Args:
+        pic (np.ndarray): [利用cv2从视频中获得的图片]
+        label (tk.Label): 加载图片的label
+        re_size (tuple) : label的尺寸(width,height)
+    Returns:
+        [np.ndarray]: [resize并转换颜色空间后的图片]
+    ''' 
+    image_tobeplayed = Image.fromarray(pic).resize(re_size) # 将cv2读取的图像转换为Image,并修改大小
+    imageTk_tobeplayed = ImageTk.PhotoImage(image=image_tobeplayed) # 转换为imagetk
+    label.configure(image=imageTk_tobeplayed) # 使用configure方法将label更新为最新待播放图像
+    label.image = imageTk_tobeplayed # 更新
+    label.update() # 更新
+    return pic
+
+# 视频检测方法
+
+def subFiltter(img, filtter: int):
+    '''图片过滤器
+
+    Args:
+        img (ndarray): 待过滤图片
+        filtter (int): 过滤阈值
+    '''
+    imginfo = img.shape
+    hei = imginfo[0]
+    wid = imginfo[1]
+    # 设置阈值将二者转换为白色底图
+    for i in range(hei):
+        for j in range(wid):
+            if img[i, j] < filtter:
+                img[i, j] = 255
+            else:
+                continue
+
+def subGetBack(img1_path: str, img2_path: str, res_path: str):
+    '''根据原始图像获得背景
+
+    Args:
+        img1_path (str): 原图1地址
+        img2_path (str): 原图2地址
+        res_path (str): 结果文件夹地址
+
+    Returns:
+        背景图像(ndarray): 背景图像
+    '''
+    # 图片相减
+    img1 = cv2.imread(img1_path, 0)
+    img2 = cv2.imread(img2_path, 0)
+    if img1 is not NONE and img2 is not NONE:
+        sub_str = img1 - img2
+        sub_back = img2 - img1
+        imgInfo = img1.shape
+        hei = imgInfo[0]
+        wid = imgInfo[1]
+        # 为去除图片边框被识别为边框，将图片内压缩1像素，此步骤一定在进行相减后立马进行
+        for i in range(hei):
+            sub_str[i, wid - 1] = 255
+            sub_str[i, 0] = 255
+            sub_back[i, wid - 1] = 255
+            sub_back[i, 0] = 255
+        for i in range(wid):
+            sub_str[hei - 1, i] = 255
+            sub_str[0, i] = 255
+            sub_back[hei - 1, i] = 255
+            sub_back[0, i] = 255
+        # 设置阈值将二者转换为白色底图
+        subFiltter(sub_str, 20)
+        subFiltter(sub_back, 20)
+        # 将过滤后的差图转换为二值图
+        ret_str, bin_str = cv2.threshold(sub_str, 127, 255, cv2.THRESH_BINARY)
+        ret_back, bin_back = cv2.threshold(sub_back, 127, 255, cv2.THRESH_BINARY)
+        # 为保障背景取景的真实，只做开操作
+        kernel = np.ones((3, 3), np.uint8)
+        bin_str_open = cv2.morphologyEx(bin_str, cv2.MORPH_OPEN, kernel, 1)
+        bin_back_open = cv2.morphologyEx(bin_back, cv2.MORPH_OPEN, kernel, 1)
+        for i in range(hei):
+            bin_str_open[i, wid - 1] = 255
+            bin_str_open[i, 0] = 255
+            bin_back_open[i, wid - 1] = 255
+            bin_back_open[i, 0] = 255
+        for i in range(wid):
+            bin_str_open[hei - 1, i] = 255
+            bin_str_open[0, i] = 255
+            bin_back_open[hei - 1, i] = 255
+            bin_back_open[0, i] = 255
+        # 边框检测
+        contours_str, hierarchy_str = cv2.findContours(bin_str_open, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        contours_back, hierarchy_back = cv2.findContours(bin_back_open, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        # 去除图框被识别为边框的影响
+        contours_str_f = []
+        contours_back_f = []
+        for i in contours_str:
+            if len(i) == (hei + wid) * 2 - 4:
+                continue
+            else:
+                contours_str_f.append(i)
+        for i in contours_back:
+            if len(i) == (hei + wid) * 2 - 4:
+                continue
+            else:
+                contours_back_f.append(i)
+        # 创建空白模板
+        dst = np.zeros(imgInfo, np.uint8)
+        for i in range(hei):
+            for j in range(wid):
+                dst[i, j] = 255
+        dst2 = np.zeros(imgInfo, np.uint8)
+        for i in range(hei):
+            for j in range(wid):
+                dst2[i, j] = 255
+
+        for i in range(hei):
+            dst[i, wid - 1] = 255
+            dst[i, 0] = 255
+        for i in range(wid):
+            dst2[hei - 1, i] = 255
+            dst2[0, i] = 255
+        # 在空白模板中绘制边框，code设为填充
+        cv2.drawContours(dst, contours_str_f, -1, (0, 255, 0), thickness=-1)
+        cv2.drawContours(dst2, contours_back_f, -1, (0, 255, 0), thickness=-1)
+        # 记录绘制的边框填充图中黑色像素的位置, 填充图中黑色像素越多，最后
+        list1 = []
+        for i in range(hei):
+            for j in range(wid):
+                if dst[i, j] == 0:
+                    list1.append([i, j])
+                else:
+                    continue
+        list2 = []
+        for i in range(hei):
+            for j in range(wid):
+                if dst2[i, j] == 0:
+                    list2.append([i, j])
+                else:
+                    continue
+        # 合成背景
+        list_out = list1 + list2
+        for [i, j] in list_out:
+            if img1[i, j] < img2[i, j]:
+                img1[i, j] = img2[i, j]
+            else:
+                img2[i, j] = img1[i, j]
+        tmp = res_path + '\\background.jpg'
+        cv2.imwrite(tmp, img2)
+        return img2
+    else:
+        text_insert_changeline(text_info_videodetection, "背景合成失败：截取图片打开失败")
+
+def person_count(background:np.ndarray, img1_path:str):
+    '''1-输入待识别图像与背景图像识别以识别人数
+       2-将
+    Args:
+        background (ndarray): 背景图像
+        img1_path (ndarray): 待识别图像
+
+    Returns:
+        int: 识别人数
+        ndarray: 识别结果图像
+    '''
+    path_whitebg = img1_path.replace('.jpg','dst_nobg.jpg')
+    path_realbg = img1_path.replace('.jpg','dst_bg.jpg')
+    img1 = cv2.imread(img1_path, 0)
+    # 读取shape
+    imgInfo = img1.shape
+    hei = imgInfo[0]
+    wid = imgInfo[1]
+    # 正反相减
+    sub = background - img1
+    sub_back = img1 - background
+    # 过滤为白色底图
+    subFiltter(sub, 20)
+    subFiltter(sub_back, 20)
+    # 二值化
+    ret_sub, bS = cv2.threshold(sub, 80, 255, cv2.THRESH_BINARY_INV)
+    ret_sub_2, bB = cv2.threshold(sub_back, 200, 255, cv2.THRESH_BINARY_INV)
+    # 相加
+    add = cv2.add(bS, bB)
+    # 闭操作
+    kernel1 = np.ones((5, 5), np.uint8)
+    close = cv2.morphologyEx(add, cv2.MORPH_CLOSE, kernel1, 1)
+    # 空白模板
+    dst2 = np.zeros((hei, wid, 1), np.uint8)
+    for i in range(hei):
+        for j in range(wid):
+            dst2[i, j] = 255
+    counts = 0
+    # 边框识别
+    contours_back, hierarchy_back = cv2.findContours(close, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    for i in contours_back:
+        # 当当前检测的面积小于阈值
+        rea = cv2.contourArea(i)
+        if rea > 400:
+            (x, y, w, h) = cv2.boundingRect(i)
+            counts += 1
+            cv2.rectangle(dst2, (x, y), (x + w, y + h), (0, 0, 0), 2)
+            cv2.rectangle(img1, (x, y), (x + w, y + h), (0, 0, 0), 2)
+    cv2.imwrite(path_realbg, img1)
+    cv2.imwrite(path_whitebg, dst2)
+    return counts, img1
+
+
+def counts(list_path, background):
+    """
+    输入待处理帧和背景，计算人数
+    :param list_path: 待处理帧图像路径list
+    :param background: 背景
+    :return: 人数list
+    """
+    list_person = []
+    for i in list_path:
+        list_person.append(person_count(background, i))
+    return list_person
+
+
+
 # 查看是否存在工作目录
 # 当此文件不存在也不需要在程序初始化时创建，因为后续函数会再次确认此文件是否存在，当不存在时，彼时再行创建
 bool_fdshis_exist,  list_string_filepath= gethis_list_bool(1)
@@ -437,9 +787,9 @@ win_main.resizable(False, False)
 # 测试按钮图标
 tkimage_test = image2tk('A://tkinter//code//icon2//list.png', (36, 36))
 btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
-btn_test.place(x=600, y=450)
+# btn_test.place(x=600, y=450)
 btn_test2 = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func2)
-btn_test2.place(x=650, y=450)
+# btn_test2.place(x=650, y=450)
 
 # 载入历史记录按钮
 btn_fds_his = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_fds_his_f,
@@ -493,12 +843,27 @@ comb_filenames.bind("<<ComboboxSelected>>", comb_getcur) # 将comb与响应事�
 string_comb_curitem = comb_filenames.get()
 
 # 创建textbox，此box在选择视频后并视频读取成功后，随着主页面其余图标运动时被加载，用以展示当前视频检测进度
-text_info_videodetection = tk.Text(win_main, width=26, height=16, relief=RIDGE, bg='#F5F5F5')
+text_info_videodetection = scrolledtext.ScrolledText(win_main, width=26, height=16, relief=RIDGE, bg='#F5F5F5')
+# text_info_videodetection = tk.Text(win_main, width=26, height=16, relief=RIDGE, bg='#F5F5F5')
 text_info_videodetection.bind("<Key>", lambda a: "break")
 
 # 创建视频label
 label_video = tk.Label(win_main, bd=0, bg='#333333')
+# 小图展示label
+label_show_back = tk.Label(win_main, bd=0)
+label_show_res = tk.Label(win_main, bd=0, bg='#333333')
 
+# 创建treeview
+tree_info = ttk.Treeview(win_main, show='headings', height=1)
+tree_info["columns"] = ("帧数", "延迟", "间隔", "当前")     # #定义列
+tree_info.column("帧数", width=60, anchor=CENTER)          # #设置列
+tree_info.column("延迟", width=60, anchor=CENTER) 
+tree_info.column("间隔", width=60, anchor=CENTER) 
+tree_info.column("当前", width=60, anchor=CENTER) 
+tree_info.heading("帧数", text="视频帧数")     # #设置显示的表头名
+tree_info.heading("延迟", text="起始延迟")
+tree_info.heading("间隔", text="识别间隔")
+tree_info.heading("当前", text="当前帧数")
 
 win_main.mainloop()
 

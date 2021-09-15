@@ -1,0 +1,10 @@
+2021-09-15-10-56-03
+A:/tkinter/code/fds/case0_all.fds
+A:/tkinter/code/fds/case0_left.fds
+A:/tkinter/code/fds/case0_right.fds
+A:/tkinter/code/fds/case1_all.fds
+A:/tkinter/code/fds/case1_left.fds
+A:/tkinter/code/fds/case1_right.fds
+A:/tkinter/code/fds/case2_all.fds
+A:/tkinter/code/fds/case2_left.fds
+A:/tkinter/code/fds/case2_right.fds

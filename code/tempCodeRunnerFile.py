@@ -1,0 +1,9 @@
+tree["columns"] = ("姓名", "年龄", "身高", "体重")     # #定义列
+tree.column("姓名", width=100)          # #设置列
+tree.column("年龄", width=100)
+tree.column("身高", width=100)
+tree.column("体重", width=100)
+tree.heading("姓名", text="x姓名")        # #设置显示的表头名
+tree.heading("年龄", text="x年龄")
+tree.heading("身高", text="x身高")
+tree.heading("体重", text="x体重")

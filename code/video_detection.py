@@ -242,7 +242,6 @@ def person_count(background:np.ndarray, img1_path:str):
     cv2.imwrite(path_whitebg, dst2)
     return counts
 
-
 def counts(list_path, background):
     """
     输入待处理帧和背景，计算人数
@@ -274,5 +273,5 @@ def cal(res_path:str, list_path_pics:str):
     print(per_nums_list)  # [5, 3, 1, 2, 3, 2, 2, 1, 3, 3, 1, 1]
     return per_nums_list, back
 
-a, l = video_read('A://tkinter//code//pets.mp4',50, 10)
-per_nums_list, back = cal(a, l)
+'''a, l = video_read('A://tkinter//code//pets.mp4',50, 10)
+per_nums_list, back = cal(a, l)'''
