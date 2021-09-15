@@ -2,6 +2,7 @@ import os
 import sys
 import io
 import datetime
+from tkinter.constants import YES
 
 def get_headchid(fds_path: str):
     '''找出fds文件的headchid
@@ -86,4 +87,80 @@ def create_folders(fds_path:str, case_num:int):
         list_string_path.append(tmp_str_path + 'STR-' + str(i)) 
     return list_string_path
 
-a = create_folders('A:\\tkinter\\code\\fds\\case0_all.fds', 10)
+def fds_duplicate(fds_path: str, fds_lines_list: list, tag_line: str):
+    '''生成完整的fds文件
+
+    Args:
+        fds_path (str): 新生成的完整的fds文件路径
+        fds_lines_list (list): 源fds文件中的行list
+        tag_line (str): 需要改变的fds语句行
+
+    Returns:
+        bool: 写入成功与否
+    '''
+    
+    with open(fds_path, 'a', encoding='UTF-8') as io_new_fds: # 新建文件写入io
+    # 循环将源文本中的lines通过io写入新的文件中
+        for i in fds_lines_list:
+            io_new_fds.writelines(i)
+        io_new_fds.write(tag_line)  # 将需要写入的句子写入新的文件中
+        io_new_fds.write('&TAIL/')
+    io_new_fds.close()
+    return YES
+
+def change_line(person_num: int):
+    '''传入待写入的人数数据,生成完整的fds疏散语句
+    &EVAC ID='EVAC1', XB=0.00,10.00,0.00,8.00,0.4000,1.60, NUMBER_INITIAL_PERSONS= * , PERS_ID='person1'/  \n
+    Args:
+        person_num (int): 待写入的人数数据
+
+    Returns:
+        str': 完整的fds疏散语句
+    ''' 
+    str_oriline = "&EVAC ID='EVAC', XB=1.60,10.00,0.00,10.00,0.4000,1.60, NUMBER_INITIAL_PERSONS= *, PERS_ID='person'/\n"
+    return str_oriline.replace('*', str(person_num))
+
+def fds_duplicate_s(case_folder_path: str, fds_path: str, per_nums_list: list):
+    '''批量复制写入新的fds文件
+
+    Args:
+        case_folder_path (str): 当前批次的fds文件文件夹路径
+        fds_path (str): 当前批次的fds文件源文件(不包含人数line)
+        per_nums_list (list): 需要写入的人数list
+
+    Returns:
+        list: 返回新生成的fds文件的.bat路径list
+    '''
+    """
+    批量复制写入新的fds文件中
+    :param case_folder_path: 当前批次的新fds文件的文件夹路径
+    :param fds_path: 当前批次新fds文件的源文件（是最起初的fds文件，不包含人数line，各自之间的区别在于疏散策略）
+    :param per_nums_list: 需要写入的人数list
+    :return:返回新生成的fds文件的路径list
+    """
+    list_string_fdsbat_listr = '' # .bat文件路径list
+    with open(fds_path, 'r', encoding='UTF-8') as p :
+        fds_lines = p.readlines()
+    p.close()
+    string_headchid = get_headchid
+    tmp_int_index = 0
+    for i in fds_lines:
+        string_newfds_folderpath = case_folder_path + '\\NUM-' + str(tmp_int_index) # 当前fds源文件下(策略下)个人数条件下的fds文件夹
+        os.mkdir(string_newfds_folderpath)
+        string_new_fds = string_newfds_folderpath + '\\' + 
+
+    '''list_string_fdsbat_path = []  # .bat文件路径list
+    new_fds_folder_path_list = []
+    fds_io = open(fds_path, 'r')  # fds源文件的io，用于复制
+    fds_lines = fds_io.readlines()  # 读取fds源文件中的lines
+    for i in range(len(per_nums_list)):  # 根据人数数据建立循环
+        new_fds_folder_path = case_folder_path + '\\' + 'NUM-' + str(i)  # 当前策略下、当前人数下，新写成fds文件及其运行生成文件的存储目录
+        new_fds_folder_path_list.append(new_fds_folder_path)
+        os.makedirs(new_fds_folder_path)  # 创造此文件夹
+        new_fds_path = new_fds_folder_path + '\\' + 'case-' + str(i) + '.fds'  # 当前策略、人数下生成的新的fds文件的路径，用于添加到lust中
+        fds_duplicate(new_fds_path, fds_lines, change_line(per_nums_list[i]))  # 根据此新路径复制fds文件
+        list_string_fdsbat_path.append(create_run_bat(new_fds_path, 1))
+    return list_string_fdsbat_path'''
+
+
+# a = create_folders('A:\\tkinter\\code\\fds\\case0_all.fds', 10)
