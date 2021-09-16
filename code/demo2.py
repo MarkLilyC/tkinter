@@ -6,8 +6,7 @@ LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
 '''
-from genericpath import exists
-from test import get_time_stamp
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
@@ -34,23 +33,23 @@ list_string_videopath_his = [] # 存储从历史记录中读取的videos历史�
 bool_fdshis_exist = NO # 是否存在fds的历史使用记录
 bool_videohis_exist = NO # 是否存在video的历史使用记录
 bool_fdsimported = NO # 是否存在手动选择的fds文件
-string_workcwd_dir = os.getcwd() + '\\work'
-string_path_fdshis_arti = os.getcwd() + '\\work\\fdshis.txt' # 获取并创建历史工作文件夹路径
-string_path_fdshis_auto = os.getcwd() + '\\work\\fdshis_all.txt' # 获取并创建历史工作文件夹路径
-string_path_videohis_arti = os.getcwd() + '\\work\\videohis.txt'
-string_path_videohis_auto = os.getcwd() + '\\work\\videohis_all.txt'
+string_workcwd_dir = os.getcwd() + '/work'
+string_path_rc = os.getcwd() + '/work/videtectrc.txt' # 获取并创建历史工作文件夹路径
+string_path_fdshis_arti = os.getcwd() + '/work/fdshis.txt' # 获取并创建历史工作文件夹路径
+string_path_fdshis_auto = os.getcwd() + '/work/fdshis_all.txt' # 获取并创建历史工作文件夹路径
+string_path_videohis_arti = os.getcwd() + '/work/videohis.txt'
+string_path_videohis_auto = os.getcwd() + '/work/videohis_all.txt'
 string_path_backgroud = '' # 存储背景图像地址
 list_string_path_frame = [] # 存储截取的原始图像地址
 list_string_path_frame_dst = [] # 存储生成检测结果图像地址
 list_int_person_num = []
-int_initread_delay = 100
-int_capread_delay = 500
+int_read_delay = 10
+int_detect_delay = 30
 int_frame_count = 0
 tuple_float_picsize_resize = ()
 tuple_float_picsize_resize_2 = ()
 bool_auto_detect = NO
 string_resfolder_path = ''
-
 
 def import_fdsfiles():
     # 声明为全局变量
@@ -216,7 +215,7 @@ def videoplay_init(path):
         label_show_back.update() 
         int_label_showre_x = 266 + tuple_float_picsize_resize_2[0] + 10
         label_show_res.place(x=int_label_showre_x, y=410)
-        tree_info.insert("", 0, text="line1", values=(int_frame_count, int_initread_delay, int_capread_delay, '--'))    # #给第0行添加数据，索引值可重复
+        tree_info.insert("", 0, text="line1", values=(int_frame_count, int_read_delay, int_detect_delay, '--'))    # #给第0行添加数据，索引值可重复
         tree_info.place(x=int_label_showre_x + tuple_float_picsize_resize_2[0] + 10, y=453)
         tree_info_path.insert("", 0, text="line1", values=(string_video_path))
         tree_info_path.place(x=int_label_showre_x + tuple_float_picsize_resize_2[0] + 10,y=408)
@@ -276,7 +275,7 @@ def btn_video_his_f():
                 list_int_person_num.append(int_per_num)
                 tmp = i.split('_', 5)[-1].replace('.jpg', '')
                 text_insert_changeline(text_info_videodetection,'第' + tmp + '帧检测完成')
-                tree_info.insert("", 0, text="line1", values=(int_frame_count, int_initread_delay, int_capread_delay, tmp))  
+                tree_info.insert("", 0, text="line1", values=(int_frame_count, int_read_delay, int_detect_delay, tmp))  
             text_insert_changeline(text_info_videodetection, '行人计数完成')
             text_insert_changeline(text_info_videodetection, '开始疏散模拟')
             text_insert_changeline(text_info_videodetection, 'FDS结果文件夹创建..')
@@ -367,7 +366,7 @@ def btn_video_save_f():
             f.writelines(string_video_path)
 
 def btn_videodetection_results_f():
-    os.system("start explorer " + string_resfolder_path.replace('/', '\\'))
+    os.system("start explorer " + string_resfolder_path.replace('/', '/'))
 
 def save_videohis_auto(timestamp:str, mode:int, pathlist:list):
     '''自动存储用户选择的fds或者video文件
@@ -410,6 +409,7 @@ def btn_play_f():
         tuple_folat_labelsize = tuple_float_picsize_resize[:2]
         if bool_if_videoopened:
             string_resfolder_path, list_string_pics_path = get_video_frame(string_video_path, label_video, tuple_folat_labelsize)
+            text_insert_changeline(text_info_videodetection, "开始背景合成..")
             # 开始人员计数
             tmp_int_index = int(len(list_string_pics_path)/2)
             ndarray_back = subGetBack(list_string_pics_path[0], list_string_pics_path[tmp_int_index], string_resfolder_path)
@@ -427,6 +427,7 @@ def btn_play_f():
                 # 贴图
                 video_play(ndarray_back, label_show_back, tuple_float_picsize_resize_2[:2])
                 text_insert_changeline(text_info_videodetection, "背景合成完成")
+                text_insert_changeline(text_info_videodetection, "开始行人计数..")
                 for i in list_string_pics_path:
                     int_per_num, ndarray_deection_res = person_count(ndarray_back, i)
                     video_play(ndarray_deection_res, label_video, tuple_folat_labelsize[:2])
@@ -434,8 +435,9 @@ def btn_play_f():
                     list_int_person_num.append(int_per_num)
                     tmp = i.split('_', 5)[-1].replace('.jpg', '')
                     text_insert_changeline(text_info_videodetection,'第' + tmp + '帧检测完成')
-                    tree_info.insert("", 0, text="line1", values=(int_frame_count, int_initread_delay, int_capread_delay, tmp)) 
+                    tree_info.insert("", 0, text="line1", values=(int_frame_count, int_read_delay, int_detect_delay, tmp)) 
                 text_insert_changeline(text_info_videodetection, '行人计数完成')
+                time.sleep(3)
                 text_insert_changeline(text_info_videodetection, '开始疏散模拟..')
                 text_insert_changeline(text_info_videodetection, 'FDS结果文件夹创建..')
                 list_string_newfolderpath = create_folders(list_string_filepath)
@@ -449,7 +451,6 @@ def btn_play_f():
                 text_insert_changeline(text_info_videodetection, 'FDS开始运行..')
                 for i in list_list_string_fdsbatpath:
                     fds_bats_run(i)
-
                 # 辅助按钮状态回复
                 text_insert_changeline(text_info_videodetection, '全部运行完成')
                 btns_change_f([btn_win_init, btn_video_save, btn_videodetection_results], 2)
@@ -498,7 +499,7 @@ def resizepicandlabel(imagesize: list, labelsize: list):
     return ((int_frame_width / float_proportion_width, int_frame_height / float_proportion_width, 0) if float_proportion_width > float_proportion_heigth else (int_frame_width / float_proportion_heigth, int_frame_height / float_proportion_heigth, 1))
        
 def test_func2():
-    os.system("start explorer " + string_resfolder_path.replace('/', '\\'))
+    os.system("start explorer " + string_resfolder_path.replace('/', '/'))
 
 def text_insert_changeline(text:tkinter.Text, line:str):
     '''输入文字到Text控件并换行
@@ -570,7 +571,7 @@ def get_video_frame(video_path:str, label:tk.Label, re_size:tuple):
     str_resfolder = video_path.replace(video_path.split('.')[1], 'res-')
     str_resfolder += time_stamp # 结果文件文件夹
     os.mkdir(str_resfolder)
-    str_resfolder_oripics = str_resfolder + '//results' # 结果图片文件夹
+    str_resfolder_oripics = str_resfolder + '/results' # 结果图片文件夹
     os.mkdir(str_resfolder_oripics)
     list_path_pics = []
     cap = cv2.VideoCapture(video_path)
@@ -579,19 +580,18 @@ def get_video_frame(video_path:str, label:tk.Label, re_size:tuple):
     while flag:
         ret, ndarray_pic = cap.read()
         if ret:
-            if (c-int_initread_delay) % int_capread_delay == 0:
+            if (c-int_read_delay) % int_detect_delay == 0:
                 ndarray_pic = cv2.cvtColor(ndarray_pic, cv2.COLOR_BGR2RGBA)
-                tmp_pic_path = str_resfolder_oripics + "//capture_image_" + str(c) + '.jpg'
-                text_insert_changeline(text_info_videodetection, "开始截取视频第：" + str(c+int_initread_delay) + " 帧")
+                tmp_pic_path = str_resfolder_oripics + "/capture_image_" + str(c) + '.jpg'
+                text_insert_changeline(text_info_videodetection, "截取视频第：" + str(c) + " 帧..")
                 ndarray_pic_res = video_play(ndarray_pic, label, re_size)
                 cv2.imwrite(tmp_pic_path, ndarray_pic_res)
                 list_path_pics.append(tmp_pic_path)
             c += 1
-            cv2.waitKey(0)
         else:
-            text_insert_changeline(text_info_videodetection, "所有帧都已经保存完成")
-            text_insert_changeline(text_info_videodetection, "视频截取成功")
-            text_insert_changeline(text_info_videodetection, "开始行人检测计数")
+            text_insert_changeline(text_info_videodetection, "所有帧都已经保存完成..")
+            text_insert_changeline(text_info_videodetection, "视频截取成功..")
+            text_insert_changeline(text_info_videodetection, "开始行人检测计数..")
             break
     cap.release()
     # string_res_folderpath, list_video_frames_path = video_detection.video_read(string_video_path, 50, 10)
@@ -742,7 +742,7 @@ def subGetBack(img1_path: str, img2_path: str, res_path: str):
                 img1[i, j] = img2[i, j]
             else:
                 img2[i, j] = img1[i, j]
-        tmp = res_path + '\\background.jpg'
+        tmp = res_path + '/background.jpg'
         cv2.imwrite(tmp, img2)
         return img2
     else:
@@ -837,13 +837,13 @@ def bat_write(p:io.TextIOWrapper, fds_path:str):
     Returns:
         无返回值,通过io流直接将该bat文件书写完成,需要的io流在调用此函数前就已打开
     '''
-    list_str_fdspath_part = fds_path.split('\\', 15) # 将路径分割
+    list_str_fdspath_part = fds_path.split('/', 15) # 将路径分割
     p.write('@echo off \n')
     p.write(list_str_fdspath_part[0] + '\n')
     p.write('cd' + ' ')
     for i in range(len(list_str_fdspath_part) - 2):
-        p.write('\\' + list_str_fdspath_part[i + 1])
-    p.write('\\' + '\n')
+        p.write('/' + list_str_fdspath_part[i + 1])
+    p.write('/' + '\n')
     return 1
 
 def create_run_bat(fds_path:str, mode:str, string_fdshead:str):
@@ -864,7 +864,7 @@ def create_run_bat(fds_path:str, mode:str, string_fdshead:str):
             p.write('fds ' + string_fdshead + '.fds\n')
         else:
             p.write(string_fdshead.split('.', 1)[0] + '.smv \n')
-        p.write('cd\\ ')
+        p.write('cd/ ')
     p.close()
     return string_bat_path
 
@@ -881,19 +881,18 @@ def create_folders(list_fds_path:list):
     Returns:
         list:string-用于存储各个case的运行结果
     ''' 
-    fds_path = list_fds_path[0]
+    fds_path = list_fds_path[0] # A:/tkinter/code/fds/case0_all.fds 形如这样的fds文件路径
     now = int(round(time.time()*1000))
-    time_stamp = time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(now/1000))
-    string_folder_path = fds_path.replace('.fds', time_stamp)
-    string_folder_path = fds_path.replace(fds_path.split('\\',10)[-1], time_stamp)
-    string_evacres_plot_folderpath = string_folder_path + '\\evac_res_plot'
-    os.mkdir(string_folder_path)
+    time_stamp = time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(now/1000)) # 获得时间戳
+    string_folder_path = fds_path.replace(fds_path.split('/',10)[-1], time_stamp) # A:\tkinter\code\fds\2021-09-16-21-02-48 和fds_path处于同一路径下的根据时间戳创建的结果文件夹
+    string_evacres_plot_folderpath = string_folder_path + '/evac_res_plot'
+    os.mkdir(string_folder_path) 
     os.mkdir(string_evacres_plot_folderpath)
-    tmp_str_path = string_folder_path + '\\'
+    tmp_str_path = string_folder_path + '/' # A:\tkinter\code\fds\2021-09-16-21-02-48/在结果文文件夹中创建新的文件夹
     list_string_path = []
     for i in range(len(list_fds_path)):
         os.mkdir(tmp_str_path + 'STR-' + str(i))
-        list_string_path.append(tmp_str_path + 'STR-' + str(i)) 
+        list_string_path.append(tmp_str_path + 'STR-' + str(i))
     return list_string_path
 
 def fds_duplicate(fds_path: str, fds_lines_list: list, tag_line: str):
@@ -947,27 +946,27 @@ def fds_duplicate_s(case_folder_path: str, fds_path: str, per_nums_list: list):
     :param per_nums_list: 需要写入的人数list
     :return:返回新生成的fds文件的路径list
     """
-    list_string_fdsbat_listr = [] # .bat文件路径list
+    list_string_fdsbat_list = [] # .bat文件路径list
     with open(fds_path, 'r', encoding='UTF-8') as p :
         fds_lines = p.readlines()
     p.close()
     string_headchid = get_headchid(fds_lines) # 找出headchid
     for i in range(len(per_nums_list)):
-        string_newfds_folderpath = case_folder_path + '\\NUM-' + str(i) # 当前fds源文件下(策略下)个人数条件下的fds文件夹
+        string_newfds_folderpath = case_folder_path + '/NUM-' + str(i) # 当前fds源文件下(策略下)个人数条件下的fds文件夹
         os.mkdir(string_newfds_folderpath)
-        string_new_fds_path = string_newfds_folderpath + '\\' + string_headchid + '.fds'
+        string_new_fds_path = string_newfds_folderpath + '/' + string_headchid + '.fds'
         fds_duplicate(string_new_fds_path, fds_lines, change_line(per_nums_list[i]))
-        list_string_fdsbat_listr.append(create_run_bat(string_new_fds_path, 1, string_headchid))
-    return list_string_fdsbat_listr
+        list_string_fdsbat_list.append(create_run_bat(string_new_fds_path, 1, string_headchid))
+    return list_string_fdsbat_list
     '''list_string_fdsbat_path = []  # .bat文件路径list
     new_fds_folder_path_list = []
     fds_io = open(fds_path, 'r')  # fds源文件的io，用于复制
     fds_lines = fds_io.readlines()  # 读取fds源文件中的lines
     for i in range(len(per_nums_list)):  # 根据人数数据建立循环
-        new_fds_folder_path = case_folder_path + '\\' + 'NUM-' + str(i)  # 当前策略下、当前人数下，新写成fds文件及其运行生成文件的存储目录
+        new_fds_folder_path = case_folder_path + '/' + 'NUM-' + str(i)  # 当前策略下、当前人数下，新写成fds文件及其运行生成文件的存储目录
         new_fds_folder_path_list.append(new_fds_folder_path)
         os.makedirs(new_fds_folder_path)  # 创造此文件夹
-        new_fds_path = new_fds_folder_path + '\\' + 'case-' + str(i) + '.fds'  # 当前策略、人数下生成的新的fds文件的路径，用于添加到lust中
+        new_fds_path = new_fds_folder_path + '/' + 'case-' + str(i) + '.fds'  # 当前策略、人数下生成的新的fds文件的路径，用于添加到lust中
         fds_duplicate(new_fds_path, fds_lines, change_line(per_nums_list[i]))  # 根据此新路径复制fds文件
         list_string_fdsbat_path.append(create_run_bat(new_fds_path, 1))
     return list_string_fdsbat_path'''
@@ -978,6 +977,7 @@ def fds_bats_run(fds_run_paths: list):
     :param fds_run_paths: fds的运行文件路径list
     :return: 0
     """
+
     for i in fds_run_paths:
         text_insert_changeline(text_info_videodetection, i + '正在运行..')
         p = subprocess.Popen(
@@ -989,109 +989,125 @@ def fds_bats_run(fds_run_paths: list):
         text_insert_changeline(text_info_videodetection, i + '运行完成')
     return 0
 
-# 查看是否存在工作目录
-# 当此文件不存在也不需要在程序初始化时创建，因为后续函数会再次确认此文件是否存在，当不存在时，彼时再行创建
-bool_fdshis_exist,  list_string_filepath= gethis_list_bool(1)
-bool_videohis_exist,  list_string_videopath_his= gethis_list_bool(2)
+if __name__ == "__main__" :
+    # 查看是否存在工作目录
+    list_string_rc = []
+    if os.path.exists(string_path_rc) :
+        with open(string_path_rc, 'r') as f:
+                list_string_rc = f.readlines()
+        int_read_delay, int_detect_delay = list(map(lambda i: int(i.strip().split(':',1)[-1]), list_string_rc))
+    else:
+        if os.path.exists(string_workcwd_dir):
+            with open(string_path_rc, 'w') as f:
+                f.writelines("int_read_delay:10\n")
+                f.writelines("int_detect_delay:30\n")
+        else:
+            os.mkdir(string_workcwd_dir)
+            with open(string_path_rc, 'w') as f:
+                f.writelines("int_read_delay:10\n")
+                f.writelines("int_detect_delay:30\n")
+    # 当此文件不存在也不需要在程序初始化时创建，因为后续函数会再次确认此文件是否存在，当不存在时，彼时再行创建
+    bool_fdshis_exist,  list_string_filepath= gethis_list_bool(1)
+    bool_videohis_exist,  list_string_videopath_his= gethis_list_bool(2)
 
-# 窗口初始化
-win_main = tk.Tk()
-win_main.title('CJ_V1.0')
-win_main.geometry('800x510')
-win_main['bg'] = 'white' 
-win_main.resizable(False, False)
+    # 窗口初始化
+    win_main = tk.Tk()
+    win_main.title('CJ_V1.0')
+    win_main.geometry('800x510')
+    win_main['bg'] = 'white' 
+    win_main.resizable(False, False)
 
-# 测试按钮图标
-tkimage_test = image2tk('A://tkinter//code//icon2//list.png', (36, 36))
-btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
-# btn_test.place(x=600, y=450)
-btn_test2 = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func2)
-btn_test2.place(x=650, y=450)
+    # 测试按钮图标
+    tkimage_test = image2tk('A:/tkinter/code/icon2/list.png', (36, 36))
+    btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
+    # btn_test.place(x=600, y=450)
+    btn_test2 = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func2)
+    btn_test2.place(x=650, y=450)
 
-# 创建初始设置按钮
-text_frame_init = tk.Button(win_main)
+    # 创建初始设置按钮
+    text_frame_init = tk.Button(win_main)
 
-# 载入历史记录按钮
-btn_fds_his = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_fds_his_f,
-                state=(NORMAL if bool_fdshis_exist else DISABLED))
-btn_fds_his.place(x=354, y=140)
-btn_video_his = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_video_his_f,
-                state=DISABLED)
-btn_video_his.place(x=418, y=282)
+    # 载入历史记录按钮
+    btn_fds_his = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_fds_his_f,
+                    state=(NORMAL if bool_fdshis_exist else DISABLED))
+    btn_fds_his.place(x=354, y=140)
+    btn_video_his = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=btn_video_his_f,
+                    state=DISABLED)
+    btn_video_his.place(x=418, y=282)
 
-# 播放按钮图标
-# tkimage_play = image2tk('A://tkinter//code//icon2//run.png', (178, 178)) # 加载播放图标
-tkimage_play = image2tk('A://tkinter//code/icon2/run.png', (178, 178)) # 加载播放图标
-tkimage_play_f = image2tk('A://tkinter//code//icon2//run_f.png', (178, 178)) # 加载播放图标
-btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_play_f) # 创建播放按钮
-btn_play.configure(state=DISABLED) # 设置播放按钮初始状态为未激活 不可点击
-btn_play.place(x=460, y=140) # 绑定窗口
+    # 播放按钮图标
+    # tkimage_play = image2tk('A:/tkinter/code/icon2/run.png', (178, 178)) # 加载播放图标
+    tkimage_play = image2tk('A:/tkinter/code/icon2/run.png', (178, 178)) # 加载播放图标
+    tkimage_play_f = image2tk('A:/tkinter/code/icon2/run_f.png', (178, 178)) # 加载播放图标
+    btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_play_f) # 创建播放按钮
+    btn_play.configure(state=DISABLED) # 设置播放按钮初始状态为未激活 不可点击
+    btn_play.place(x=460, y=140) # 绑定窗口
 
-# 引入FDS模型按钮图标
-# 初始图标：未选择FDS文件时的图标
-tkimage_open = image2tk('A://tkinter//code//icon2//add.png', (178, 178))
-# 选择FDS文件后的图标
-tkimage_opened = image2tk('A://tkinter//code//icon2//check.png', (178, 178))
-btn_open = tk.Button(win_main,image=tkimage_open, cursor='hand2', command=import_fdsfiles) 
-btn_open.place(x=170, y=140) # 居中
+    # 引入FDS模型按钮图标
+    # 初始图标：未选择FDS文件时的图标
+    tkimage_open = image2tk('A:/tkinter/code/icon2/add.png', (178, 178))
+    # 选择FDS文件后的图标
+    tkimage_opened = image2tk('A:/tkinter/code/icon2/check.png', (178, 178))
+    btn_open = tk.Button(win_main,image=tkimage_open, cursor='hand2', command=import_fdsfiles) 
+    btn_open.place(x=170, y=140) # 居中
 
-# 文件功能按钮
-# 编辑
-tkimage_edit = image2tk('A://tkinter//code//icon2//edit.png', (32, 32))
-btn_file_edit = tk.Button(win_main, image=tkimage_edit, cursor='hand2', command=btn_file_edit_f)
-# 删除
-tkimage_delete = image2tk('A://tkinter//code//icon2//delete.png', (32, 32))
-btn_file_delete = tk.Button(win_main, image=tkimage_delete, cursor='hand2', command=btn_file_delete_f)
-# 保存
-tkimage_save = image2tk('A://tkinter//code//icon2//save.png', (32, 32))
-btn_file_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_file_save_f)
+    # 文件功能按钮
+    # 编辑
+    tkimage_edit = image2tk('A:/tkinter/code/icon2/edit.png', (32, 32))
+    btn_file_edit = tk.Button(win_main, image=tkimage_edit, cursor='hand2', command=btn_file_edit_f)
+    # 删除
+    tkimage_delete = image2tk('A:/tkinter/code/icon2/delete.png', (32, 32))
+    btn_file_delete = tk.Button(win_main, image=tkimage_delete, cursor='hand2', command=btn_file_delete_f)
+    # 保存
+    tkimage_save = image2tk('A:/tkinter/code/icon2/save.png', (32, 32))
+    btn_file_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_file_save_f)
 
-# 视频功能按钮
-# 保存此视频地址，沿用保存fds文件路径地址的图标
-btn_video_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_video_save_f, state=DISABLED)
-# 打开视频检测结果文件夹按钮
-tkimage_openinfolder = image2tk('A://tkinter/code//icon2//folder.png', (30, 32))
-btn_videodetection_results = tk.Button(win_main, image=tkimage_openinfolder, cursor='hand2', command=btn_videodetection_results_f, state=DISABLED)
+    # 视频功能按钮
+    # 保存此视频地址，沿用保存fds文件路径地址的图标
+    btn_video_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_video_save_f, state=DISABLED)
+    # 打开视频检测结果文件夹按钮
+    tkimage_openinfolder = image2tk('A:/tkinter/code/icon2/folder.png', (30, 32))
+    btn_videodetection_results = tk.Button(win_main, image=tkimage_openinfolder, cursor='hand2', command=btn_videodetection_results_f, state=DISABLED)
 
-# 窗口复原按钮图标
-tkimage_win_init = image2tk('A://tkinter//code//icon2//previsous.png', (32,32))
-btn_win_init = tk.Button(win_main, image=tkimage_win_init, cursor='hand2', command=btn_win_init_f, state=DISABLED)
+    # 窗口复原按钮图标
+    tkimage_win_init = image2tk('A:/tkinter/code/icon2/previsous.png', (32,32))
+    btn_win_init = tk.Button(win_main, image=tkimage_win_init, cursor='hand2', command=btn_win_init_f, state=DISABLED)
 
-# 创建comb，此comb在选择按钮被点击并存在选择项是才被加载窗口中
-tkstringvar_filepath = tkinter.StringVar() # 创建StringVar储存文件名
-comb_filenames = ttk.Combobox(win_main, textvariable=tkstringvar_filepath, height=50, width=23) # 创建comb本体
-comb_filenames.bind("<<ComboboxSelected>>", comb_getcur) # 将comb与响应事件绑定
-string_comb_curitem = comb_filenames.get()
+    # 创建comb，此comb在选择按钮被点击并存在选择项是才被加载窗口中
+    tkstringvar_filepath = tkinter.StringVar() # 创建StringVar储存文件名
+    comb_filenames = ttk.Combobox(win_main, textvariable=tkstringvar_filepath, height=50, width=23) # 创建comb本体
+    comb_filenames.bind("<<ComboboxSelected>>", comb_getcur) # 将comb与响应事件绑定
+    string_comb_curitem = comb_filenames.get()
 
-# 创建textbox，此box在选择视频后并视频读取成功后，随着主页面其余图标运动时被加载，用以展示当前视频检测进度
-text_info_videodetection = scrolledtext.ScrolledText(win_main, width=26, height=16, relief=RIDGE, bg='#F5F5F5')
-# text_info_videodetection = tk.Text(win_main, width=26, height=16, relief=RIDGE, bg='#F5F5F5')
-text_info_videodetection.bind("<Key>", lambda a: "break")
+    # 创建textbox，此box在选择视频后并视频读取成功后，随着主页面其余图标运动时被加载，用以展示当前视频检测进度
+    text_info_videodetection = scrolledtext.ScrolledText(win_main, width=26, height=16, relief=RIDGE, bg='#F5F5F5')
+    # text_info_videodetection = tk.Text(win_main, width=26, height=16, relief=RIDGE, bg='#F5F5F5')
+    text_info_videodetection.bind("<Key>", lambda a: "break")
 
-# 创建视频label
-label_video = tk.Label(win_main, bd=0, bg='#333333')
+    # 创建视频label
+    label_video = tk.Label(win_main, bd=0, bg='#333333')
 
-# 小图展示label
-label_show_back = tk.Label(win_main, bd=0)
-label_show_res = tk.Label(win_main, bd=0, bg='#333333')
+    # 小图展示label
+    label_show_back = tk.Label(win_main, bd=0)
+    label_show_res = tk.Label(win_main, bd=0, bg='#333333')
 
-# 创建treeview
-tree_info = ttk.Treeview(win_main, show='headings', height=1)
-tree_info["columns"] = ("帧数", "延迟", "间隔", "当前")     # #定义列
-tree_info.column("帧数", width=60, anchor=CENTER)          # #设置列
-tree_info.column("延迟", width=60, anchor=CENTER) 
-tree_info.column("间隔", width=60, anchor=CENTER) 
-tree_info.column("当前", width=60, anchor=CENTER) 
-tree_info.heading("帧数", text="视频帧数")     # #设置显示的表头名
-tree_info.heading("延迟", text="起始延迟")
-tree_info.heading("间隔", text="识别间隔")
-tree_info.heading("当前", text="当前帧数")
-tree_info_path = ttk.Treeview(win_main, show='headings', height=1)
-tree_info_path["columns"] = ("视频地址")     # #定义列
-tree_info_path.column("视频地址", width=240, anchor=CENTER) 
-tree_info_path.heading("视频地址", text="视频地址")     # #设置显示的表头名
+    # 创建treeview
+    tree_info = ttk.Treeview(win_main, show='headings', height=1)
+    tree_info["columns"] = ("帧数", "延迟", "间隔", "当前")     # #定义列
+    tree_info.column("帧数", width=60, anchor=CENTER)          # #设置列
+    tree_info.column("延迟", width=60, anchor=CENTER) 
+    tree_info.column("间隔", width=60, anchor=CENTER) 
+    tree_info.column("当前", width=60, anchor=CENTER) 
+    tree_info.heading("帧数", text="视频帧数")     # #设置显示的表头名
+    tree_info.heading("延迟", text="起始延迟")
+    tree_info.heading("间隔", text="识别间隔")
+    tree_info.heading("当前", text="当前帧数")
+    tree_info_path = ttk.Treeview(win_main, show='headings', height=1)
+    tree_info_path["columns"] = ("视频地址")     # #定义列
+    tree_info_path.column("视频地址", width=240, anchor=CENTER) 
+    tree_info_path.heading("视频地址", text="视频地址")     # #设置显示的表头名
 
-win_main.mainloop()
+    win_main.mainloop()
 
 
 

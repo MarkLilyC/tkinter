@@ -6,9 +6,6 @@ LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
 '''
-
-import cv2
-a = cv2.imread('../code/icon2/add.png')
-print(a)
-cv2.imshow('aa', a)
-cv2.waitKey(0)
+import demo2
+import time
+import os
