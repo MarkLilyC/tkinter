@@ -1,2 +1,2 @@
 int_read_delay: 40
-int_detect_delay: 50
+int_detect_delay: 500
