@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-16 16:08:12
+LastEditTime: 2021-09-23 16:50:17
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
@@ -1018,7 +1018,7 @@ if __name__ == "__main__" :
     win_main.resizable(False, False)
 
     # 测试按钮图标
-    tkimage_test = image2tk('A:/tkinter/code/icon2/list.png', (36, 36))
+    tkimage_test = image2tk('A:/GitHub/tkinter/code/icon2/list.png', (36, 36))
     btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
     # btn_test.place(x=600, y=450)
     btn_test2 = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func2)
@@ -1037,40 +1037,40 @@ if __name__ == "__main__" :
 
     # 播放按钮图标
     # tkimage_play = image2tk('A:/tkinter/code/icon2/run.png', (178, 178)) # 加载播放图标
-    tkimage_play = image2tk('A:/tkinter/code/icon2/run.png', (178, 178)) # 加载播放图标
-    tkimage_play_f = image2tk('A:/tkinter/code/icon2/run_f.png', (178, 178)) # 加载播放图标
+    tkimage_play = image2tk('A:/GitHub/tkinter/code/icon2/run.png', (178, 178)) # 加载播放图标
+    tkimage_play_f = image2tk('A:/GitHub/tkinter/code/icon2/run_f.png', (178, 178)) # 加载播放图标
     btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_play_f) # 创建播放按钮
     btn_play.configure(state=DISABLED) # 设置播放按钮初始状态为未激活 不可点击
     btn_play.place(x=460, y=140) # 绑定窗口
 
     # 引入FDS模型按钮图标
     # 初始图标：未选择FDS文件时的图标
-    tkimage_open = image2tk('A:/tkinter/code/icon2/add.png', (178, 178))
+    tkimage_open = image2tk('A:/GitHub/tkinter/code/icon2/add.png', (178, 178))
     # 选择FDS文件后的图标
-    tkimage_opened = image2tk('A:/tkinter/code/icon2/check.png', (178, 178))
+    tkimage_opened = image2tk('A:/GitHub/tkinter/code/icon2/check.png', (178, 178))
     btn_open = tk.Button(win_main,image=tkimage_open, cursor='hand2', command=import_fdsfiles) 
     btn_open.place(x=170, y=140) # 居中
 
     # 文件功能按钮
     # 编辑
-    tkimage_edit = image2tk('A:/tkinter/code/icon2/edit.png', (32, 32))
+    tkimage_edit = image2tk('A:/GitHub/tkinter/code/icon2/edit.png', (32, 32))
     btn_file_edit = tk.Button(win_main, image=tkimage_edit, cursor='hand2', command=btn_file_edit_f)
     # 删除
-    tkimage_delete = image2tk('A:/tkinter/code/icon2/delete.png', (32, 32))
+    tkimage_delete = image2tk('A:/GitHub/tkinter/code/icon2/delete.png', (32, 32))
     btn_file_delete = tk.Button(win_main, image=tkimage_delete, cursor='hand2', command=btn_file_delete_f)
     # 保存
-    tkimage_save = image2tk('A:/tkinter/code/icon2/save.png', (32, 32))
+    tkimage_save = image2tk('A:/GitHub/tkinter/code/icon2/save.png', (32, 32))
     btn_file_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_file_save_f)
 
     # 视频功能按钮
     # 保存此视频地址，沿用保存fds文件路径地址的图标
     btn_video_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_video_save_f, state=DISABLED)
     # 打开视频检测结果文件夹按钮
-    tkimage_openinfolder = image2tk('A:/tkinter/code/icon2/folder.png', (30, 32))
+    tkimage_openinfolder = image2tk('A:/GitHub/tkinter/code/icon2/folder.png', (30, 32))
     btn_videodetection_results = tk.Button(win_main, image=tkimage_openinfolder, cursor='hand2', command=btn_videodetection_results_f, state=DISABLED)
 
     # 窗口复原按钮图标
-    tkimage_win_init = image2tk('A:/tkinter/code/icon2/previsous.png', (32,32))
+    tkimage_win_init = image2tk('A:/GitHub/tkinter/code/icon2/previsous.png', (32,32))
     btn_win_init = tk.Button(win_main, image=tkimage_win_init, cursor='hand2', command=btn_win_init_f, state=DISABLED)
 
     # 创建comb，此comb在选择按钮被点击并存在选择项是才被加载窗口中
