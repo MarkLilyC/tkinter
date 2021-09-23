@@ -1002,7 +1002,7 @@ if __name__ == "__main__" :
 
     # 窗口初始化
     win_main = tk.Tk()
-    win_main.title('CJ_V1.0')
+    win_main.title('VTecEvac 1.0')
     win_main.geometry('800x510')
     win_main['bg'] = 'white' 
     win_main.resizable(False, False)
