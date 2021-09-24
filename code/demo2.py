@@ -1,7 +1,7 @@
 '''
 Author: your name
 Date: 2021-09-07 11:43:55
-LastEditTime: 2021-09-23 16:50:17
+LastEditTime: 2021-09-24 17:15:17
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
 FilePath: \tkinter\code\demo1.py
@@ -45,9 +45,19 @@ list_string_path_frame = [] # 存储截取的原始图像地址
 list_string_path_frame_dst = [] # 存储生成检测结果图像地址
 list_list_string_fdsbatpath = []
 list_int_person_num = []
-int_read_delay = 10
-int_detect_delay = 30
-int_frame_count = 0
+
+dict_pare_int = {
+    'int_read_delay': 10,
+    'int_detect_delay': 30,
+    'int_binpic_fillter': 20,
+    'int_personcount_threhold_1': 80,
+    'int_personcount_threhold_2': 200,
+    'int_dst_area_min': 500,
+    'int_bg_threshold': 127,
+    'int_src_index_1': 0,
+    'int_src_index_2': 3
+}
+nt_frame_count = 0
 tuple_float_picsize_resize = ()
 tuple_float_picsize_resize_2 = ()
 bool_auto_detect = NO
@@ -195,7 +205,7 @@ def videoplay_init(path):
         label_show_back.update() 
         int_label_showre_x = 266 + tuple_float_picsize_resize_2[0] + 10
         label_show_res.place(x=int_label_showre_x, y=410)
-        tree_info.insert("", 0, text="line1", values=(int_frame_count, int_read_delay, int_detect_delay, '--'))    # #给第0行添加数据，索引值可重复
+        tree_info.insert("", 0, text="line1", values=(int_frame_count, dict_pare_int['int_read_delay'], dict_pare_int['int_detect_delay'], '--'))    # #给第0行添加数据，索引值可重复
         tree_info.place(x=int_label_showre_x + tuple_float_picsize_resize_2[0] + 10, y=453)
         tree_info_path.insert("", 0, text="line1", values=(string_video_path))
         tree_info_path.place(x=int_label_showre_x + tuple_float_picsize_resize_2[0] + 10,y=408)
@@ -240,8 +250,8 @@ def btn_video_his_f():
         time.sleep(1)
         string_resfolder_path, list_string_pics_path = get_video_frame(string_video_path, label_video, tuple_folat_labelsize)
         # 开始人员计数
-        tmp_int_index = int(len(list_string_pics_path)/2)
-        ndarray_back = subGetBack(list_string_pics_path[0], list_string_pics_path[tmp_int_index], string_resfolder_path)
+        tmp_int_index = dict_pare_int['int_src_index_2']
+        ndarray_back = subGetBack(list_string_pics_path[dict_pare_int['int_src_index_1']], list_string_pics_path[int(len(list_string_pics_path)/2) if tmp_int_index == 0 else tmp_int_index], string_resfolder_path)
         if ndarray_back is not NONE:
                 video_play(ndarray_back, label_video, tuple_folat_labelsize)
                 # 创建label
@@ -264,7 +274,7 @@ def btn_video_his_f():
                     list_int_person_num.append(int_per_num)
                     tmp = i.split('_', 5)[-1].replace('.jpg', '')
                     text_insert_changeline(text_info_videodetection,'第' + tmp + '帧检测完成')
-                    tree_info.insert("", 0, text="line1", values=(int_frame_count, int_read_delay, int_detect_delay, tmp)) 
+                    tree_info.insert("", 0, text="line1", values=(int_frame_count, dict_pare_int['int_read_delay'], dict_pare_int['int_detect_delay'], tmp)) 
                 
                 text_insert_changeline(text_info_videodetection, '行人计数完成')
                 text_info_videodetection.insert(tk.INSERT, "按回车继续：[enter]..")
@@ -412,7 +422,7 @@ def btn_play_f():
                     list_int_person_num.append(int_per_num)
                     tmp = i.split('_', 5)[-1].replace('.jpg', '')
                     text_insert_changeline(text_info_videodetection,'第' + tmp + '帧检测完成')
-                    tree_info.insert("", 0, text="line1", values=(int_frame_count, int_read_delay, int_detect_delay, tmp)) 
+                    tree_info.insert("", 0, text="line1", values=(int_frame_count, dict_pare_int['int_read_delay'], dict_pare_int['int_detect_delay'], tmp)) 
                 
                 text_insert_changeline(text_info_videodetection, '行人计数完成')
                 text_info_videodetection.insert(tk.INSERT, "按回车继续：[enter]..")
@@ -567,7 +577,7 @@ def get_video_frame(video_path:str, label:tk.Label, re_size:tuple):
     while flag:
         ret, ndarray_pic = cap.read()
         if ret:
-            if (c-int_read_delay) % int_detect_delay == 0:
+            if (c-dict_pare_int['int_read_delay']) % dict_pare_int['int_detect_delay'] == 0:
                 ndarray_pic = cv2.cvtColor(ndarray_pic, cv2.COLOR_BGR2RGBA)
                 tmp_pic_path = str_resfolder_oripics + "/capture_image_" + str(c) + '.jpg'
                 text_insert_changeline(text_info_videodetection, "截取视频第：" + str(c) + " 帧..")
@@ -656,8 +666,8 @@ def subGetBack(img1_path: str, img2_path: str, res_path: str):
         subFiltter(sub_str, 20)
         subFiltter(sub_back, 20)
         # 将过滤后的差图转换为二值图
-        ret_str, bin_str = cv2.threshold(sub_str, 127, 255, cv2.THRESH_BINARY)
-        ret_back, bin_back = cv2.threshold(sub_back, 127, 255, cv2.THRESH_BINARY)
+        ret_str, bin_str = cv2.threshold(sub_str, dict_pare_int['int_bg_threshold'], 255, cv2.THRESH_BINARY)
+        ret_back, bin_back = cv2.threshold(sub_back, dict_pare_int['int_bg_threshold'], 255, cv2.THRESH_BINARY)
         # 为保障背景取景的真实，只做开操作
         kernel = np.ones((3, 3), np.uint8)
         bin_str_open = cv2.morphologyEx(bin_str, cv2.MORPH_OPEN, kernel, 1)
@@ -757,11 +767,11 @@ def person_count(background:np.ndarray, img1_path:str):
     sub = background - img1
     sub_back = img1 - background
     # 过滤为白色底图
-    subFiltter(sub, 20)
-    subFiltter(sub_back, 20)
+    subFiltter(sub, dict_pare_int['int_binpic_fillter'])
+    subFiltter(sub_back, dict_pare_int['int_binpic_fillter'])
     # 二值化
-    ret_sub, bS = cv2.threshold(sub, 80, 255, cv2.THRESH_BINARY_INV)
-    ret_sub_2, bB = cv2.threshold(sub_back, 200, 255, cv2.THRESH_BINARY_INV)
+    ret_sub, bS = cv2.threshold(sub, dict_pare_int['int_personcount_threhold_1'], 255, cv2.THRESH_BINARY_INV)
+    ret_sub_2, bB = cv2.threshold(sub_back, dict_pare_int['int_personcount_threhold_2'], 255, cv2.THRESH_BINARY_INV)
     # 相加
     add = cv2.add(bS, bB)
     # 闭操作
@@ -778,7 +788,7 @@ def person_count(background:np.ndarray, img1_path:str):
     for i in contours_back:
         # 当当前检测的面积小于阈值
         rea = cv2.contourArea(i)
-        if rea > 400:
+        if rea > dict_pare_int['int_dst_area_min']:
             (x, y, w, h) = cv2.boundingRect(i)
             counts += 1
             cv2.rectangle(dst2, (x, y), (x + w, y + h), (0, 0, 0), 2)
@@ -985,7 +995,12 @@ if __name__ == "__main__" :
     if os.path.exists(string_path_rc) :
         with open(string_path_rc, 'r') as f:
                 list_string_rc = f.readlines()
-        int_read_delay, int_detect_delay = list(map(lambda i: int(i.strip().split(':',1)[-1]), list_string_rc))
+        tmp_dict = dict(list(map(lambda x: x.strip().split(':'), list_string_rc)))
+        tmp_keys = tmp_dict.keys()
+        real_keys = dict_pare_int.keys()
+        for i in [x for x in tmp_keys if x in real_keys]:
+            dict_pare_int[i] = int(tmp_dict[i])
+        
     else:
         if os.path.exists(string_workcwd_dir):
             with open(string_path_rc, 'w') as f:
@@ -1008,13 +1023,8 @@ if __name__ == "__main__" :
     win_main.resizable(False, False)
 
     # 测试按钮图标
-<<<<<<< HEAD
-    tkimage_test = image2tk('A:/tkinter/code/icon1/list.png', (36, 36))
-    # btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
-=======
     tkimage_test = image2tk('A:/GitHub/tkinter/code/icon2/list.png', (36, 36))
     btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
->>>>>>> 97aae65ef6c9785b3141466b92f4c1f12482dd1d
     # btn_test.place(x=600, y=450)
     # btn_test2 = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func2)
     # btn_test2.place(x=650, y=450)
@@ -1031,44 +1041,23 @@ if __name__ == "__main__" :
     btn_video_his.place(x=418, y=282)
 
     # 播放按钮图标
-<<<<<<< HEAD
-    # tkimage_play = image2tk('A:/tkinter/code/icon1/run.png', (178, 178)) # 加载播放图标
-    tkimage_play = image2tk('A:/tkinter/code/icon1/run.png', (178, 178)) # 加载播放图标
-    tkimage_play_f = image2tk('A:/tkinter/code/icon1/run_f.png', (178, 178)) # 加载播放图标
-=======
     # tkimage_play = image2tk('A:/tkinter/code/icon2/run.png', (178, 178)) # 加载播放图标
     tkimage_play = image2tk('A:/GitHub/tkinter/code/icon2/run.png', (178, 178)) # 加载播放图标
     tkimage_play_f = image2tk('A:/GitHub/tkinter/code/icon2/run_f.png', (178, 178)) # 加载播放图标
->>>>>>> 97aae65ef6c9785b3141466b92f4c1f12482dd1d
     btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_play_f) # 创建播放按钮
     btn_play.configure(state=DISABLED) # 设置播放按钮初始状态为未激活 不可点击
     btn_play.place(x=460, y=140) # 绑定窗口
 
     # 引入FDS模型按钮图标
     # 初始图标：未选择FDS文件时的图标
-<<<<<<< HEAD
-    tkimage_open = image2tk('A:/tkinter/code/icon1/add.png', (178, 178))
-    # 选择FDS文件后的图标
-    tkimage_opened = image2tk('A:/tkinter/code/icon1/check.png', (178, 178))
-=======
     tkimage_open = image2tk('A:/GitHub/tkinter/code/icon2/add.png', (178, 178))
     # 选择FDS文件后的图标
     tkimage_opened = image2tk('A:/GitHub/tkinter/code/icon2/check.png', (178, 178))
->>>>>>> 97aae65ef6c9785b3141466b92f4c1f12482dd1d
     btn_open = tk.Button(win_main,image=tkimage_open, cursor='hand2', command=import_fdsfiles) 
     btn_open.place(x=170, y=140) # 居中
 
     # 文件功能按钮
     # 编辑
-<<<<<<< HEAD
-    tkimage_edit = image2tk('A:/tkinter/code/icon1/edit.png', (32, 32))
-    btn_file_edit = tk.Button(win_main, image=tkimage_edit, cursor='hand2', command=btn_file_edit_f)
-    # 删除
-    tkimage_delete = image2tk('A:/tkinter/code/icon1/delete.png', (32, 32))
-    btn_file_delete = tk.Button(win_main, image=tkimage_delete, cursor='hand2', command=btn_file_delete_f)
-    # 保存
-    tkimage_save = image2tk('A:/tkinter/code/icon1/save.png', (32, 32))
-=======
     tkimage_edit = image2tk('A:/GitHub/tkinter/code/icon2/edit.png', (32, 32))
     btn_file_edit = tk.Button(win_main, image=tkimage_edit, cursor='hand2', command=btn_file_edit_f)
     # 删除
@@ -1076,26 +1065,17 @@ if __name__ == "__main__" :
     btn_file_delete = tk.Button(win_main, image=tkimage_delete, cursor='hand2', command=btn_file_delete_f)
     # 保存
     tkimage_save = image2tk('A:/GitHub/tkinter/code/icon2/save.png', (32, 32))
->>>>>>> 97aae65ef6c9785b3141466b92f4c1f12482dd1d
     btn_file_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_file_save_f)
 
     # 视频功能按钮
     # 保存此视频地址，沿用保存fds文件路径地址的图标
     btn_video_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_video_save_f, state=DISABLED)
     # 打开视频检测结果文件夹按钮
-<<<<<<< HEAD
-    tkimage_openinfolder = image2tk('A:/tkinter/code/icon1/folder.png', (30, 32))
-    btn_videodetection_results = tk.Button(win_main, image=tkimage_openinfolder, cursor='hand2', command=btn_videodetection_results_f, state=DISABLED)
-
-    # 窗口复原按钮图标
-    tkimage_win_init = image2tk('A:/tkinter/code/icon1/previous.png', (32,32))
-=======
     tkimage_openinfolder = image2tk('A:/GitHub/tkinter/code/icon2/folder.png', (30, 32))
     btn_videodetection_results = tk.Button(win_main, image=tkimage_openinfolder, cursor='hand2', command=btn_videodetection_results_f, state=DISABLED)
 
     # 窗口复原按钮图标
     tkimage_win_init = image2tk('A:/GitHub/tkinter/code/icon2/previsous.png', (32,32))
->>>>>>> 97aae65ef6c9785b3141466b92f4c1f12482dd1d
     btn_win_init = tk.Button(win_main, image=tkimage_win_init, cursor='hand2', command=btn_win_init_f, state=DISABLED)
 
     # 创建comb，此comb在选择按钮被点击并存在选择项是才被加载窗口中
