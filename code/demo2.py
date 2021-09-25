@@ -252,7 +252,13 @@ def btn_video_his_f():
         # 开始人员计数
         tmp_int_index = dict_pare_int['int_src_index_2']
         ndarray_back = subGetBack(list_string_pics_path[dict_pare_int['int_src_index_1']], list_string_pics_path[int(len(list_string_pics_path)/2) if tmp_int_index == 0 else tmp_int_index], string_resfolder_path)
-        if ndarray_back is not NONE:
+        if bool_if_videoopened:
+            string_resfolder_path, list_string_pics_path = get_video_frame(string_video_path, label_video, tuple_folat_labelsize)
+            text_insert_changeline(text_info_videodetection, "开始背景合成..")
+            # 开始人员计数
+            tmp_int_index = int(len(list_string_pics_path)/2)
+            ndarray_back = subGetBack(list_string_pics_path[0], list_string_pics_path[tmp_int_index], string_resfolder_path)
+            if ndarray_back is not NONE:
                 video_play(ndarray_back, label_video, tuple_folat_labelsize)
                 # 创建label
                 # label_video = tk.Label(win_main, width=tuple_float_picsize_resize[0], height=tuple_float_picsize_resize[1], bd=0, bg='#333333')
@@ -281,6 +287,8 @@ def btn_video_his_f():
                 btns_change_f([btn_win_init, btn_video_save, btn_videodetection_results], 2)
                 text_info_videodetection.bind("<Key>", lambda a: evac_Pre() if a.__getattribute__(CHAR) == '\r' else 'break')
                 # 辅助按钮状态回复
+        else:
+            text_insert_changeline(text_info_videodetection, '视频打开失败')        # 辅助按钮状态回复
 
     else:
         text_insert_changeline(text_info_videodetection, "视频打开失败")
