@@ -1,0 +1,9 @@
+int_read_delay: 88
+int_detect_delay: 400
+int_binpic_fillter: 20
+int_personcount_threhold_1: 80
+int_personcount_threhold_2: 200
+int_dst_area_min: 500
+int_bg_threshold: 127
+int_src_index_1: 0
+int_src_index_2: 3

@@ -23,6 +23,8 @@ import numpy as np
 import subprocess
 import io
 from tkinter.constants import YES
+import yaml
+from yaml import loader
 
 # 声明一些变量
 list_string_filepath = [] # 存储选中的FDS路径
@@ -35,7 +37,7 @@ bool_fdshis_exist = NO # 是否存在fds的历史使用记录
 bool_videohis_exist = NO # 是否存在video的历史使用记录
 bool_fdsimported = NO # 是否存在手动选择的fds文件
 string_workcwd_dir = os.getcwd() + '/work'
-string_path_rc = os.getcwd() + '/work/videtectrc.txt' # 获取并创建历史工作文件夹路径
+string_path_rc = os.getcwd() + '/work/videtectrc.yml' # 获取并创建历史工作文件夹路径
 string_path_fdshis_arti = os.getcwd() + '/work/fdshis.txt' # 获取并创建历史工作文件夹路径
 string_path_fdshis_auto = os.getcwd() + '/work/fdshis_all.txt' # 获取并创建历史工作文件夹路径
 string_path_videohis_arti = os.getcwd() + '/work/videohis.txt'
@@ -1002,8 +1004,8 @@ if __name__ == "__main__" :
     list_string_rc = []
     if os.path.exists(string_path_rc) :
         with open(string_path_rc, 'r') as f:
-                list_string_rc = f.readlines()
-        tmp_dict = dict(list(map(lambda x: x.strip().split(':'), list_string_rc)))
+            list_string_rc = f.read()
+        tmp_dict = yaml.load(list_string_rc, Loader=yaml.FullLoader)# dict(list(map(lambda x: x.strip().split(':'), list_string_rc)))
         tmp_keys = tmp_dict.keys()
         real_keys = dict_pare_int.keys()
         for i in [x for x in tmp_keys if x in real_keys]:
@@ -1025,13 +1027,13 @@ if __name__ == "__main__" :
 
     # 窗口初始化
     win_main = tk.Tk()
-    win_main.title('VTecEvac 1.0')
+    win_main.title('Evidetec 1.0') # Evacuation based on video detection
     win_main.geometry('800x510')
     win_main['bg'] = 'white' 
     win_main.resizable(False, False)
 
     # 测试按钮图标
-    tkimage_test = image2tk('A:/GitHub/tkinter/code/icon2/list.png', (36, 36))
+    tkimage_test = image2tk('A:/GitHub/tkinter/code/icon1/list.png', (36, 36))
     btn_test = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func)
     # btn_test.place(x=600, y=450)
     # btn_test2 = tk.Button(win_main, image=tkimage_test, cursor='hand2', command=test_func2)
@@ -1049,41 +1051,41 @@ if __name__ == "__main__" :
     btn_video_his.place(x=418, y=282)
 
     # 播放按钮图标
-    # tkimage_play = image2tk('A:/tkinter/code/icon2/run.png', (178, 178)) # 加载播放图标
-    tkimage_play = image2tk('A:/GitHub/tkinter/code/icon2/run.png', (178, 178)) # 加载播放图标
-    tkimage_play_f = image2tk('A:/GitHub/tkinter/code/icon2/run_f.png', (178, 178)) # 加载播放图标
+    # tkimage_play = image2tk('A:/tkinter/code/icon1/run.png', (178, 178)) # 加载播放图标
+    tkimage_play = image2tk('A:/GitHub/tkinter/code/icon1/run.png', (178, 178)) # 加载播放图标
+    tkimage_play_f = image2tk('A:/GitHub/tkinter/code/icon1/run_f.png', (178, 178)) # 加载播放图标
     btn_play = tk.Button(win_main,image=tkimage_play_f, cursor='hand2', command=btn_play_f) # 创建播放按钮
     btn_play.configure(state=DISABLED) # 设置播放按钮初始状态为未激活 不可点击
     btn_play.place(x=460, y=140) # 绑定窗口
 
     # 引入FDS模型按钮图标
     # 初始图标：未选择FDS文件时的图标
-    tkimage_open = image2tk('A:/GitHub/tkinter/code/icon2/add.png', (178, 178))
+    tkimage_open = image2tk('A:/GitHub/tkinter/code/icon1/add.png', (178, 178))
     # 选择FDS文件后的图标
-    tkimage_opened = image2tk('A:/GitHub/tkinter/code/icon2/check.png', (178, 178))
+    tkimage_opened = image2tk('A:/GitHub/tkinter/code/icon1/check.png', (178, 178))
     btn_open = tk.Button(win_main,image=tkimage_open, cursor='hand2', command=import_fdsfiles) 
     btn_open.place(x=170, y=140) # 居中
 
     # 文件功能按钮
     # 编辑
-    tkimage_edit = image2tk('A:/GitHub/tkinter/code/icon2/edit.png', (32, 32))
+    tkimage_edit = image2tk('A:/GitHub/tkinter/code/icon1/edit.png', (32, 32))
     btn_file_edit = tk.Button(win_main, image=tkimage_edit, cursor='hand2', command=btn_file_edit_f)
     # 删除
-    tkimage_delete = image2tk('A:/GitHub/tkinter/code/icon2/delete.png', (32, 32))
+    tkimage_delete = image2tk('A:/GitHub/tkinter/code/icon1/delete.png', (32, 32))
     btn_file_delete = tk.Button(win_main, image=tkimage_delete, cursor='hand2', command=btn_file_delete_f)
     # 保存
-    tkimage_save = image2tk('A:/GitHub/tkinter/code/icon2/save.png', (32, 32))
+    tkimage_save = image2tk('A:/GitHub/tkinter/code/icon1/save.png', (32, 32))
     btn_file_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_file_save_f)
 
     # 视频功能按钮
     # 保存此视频地址，沿用保存fds文件路径地址的图标
     btn_video_save = tk.Button(win_main, image=tkimage_save, cursor='hand2', command=btn_video_save_f, state=DISABLED)
     # 打开视频检测结果文件夹按钮
-    tkimage_openinfolder = image2tk('A:/GitHub/tkinter/code/icon2/folder.png', (30, 32))
+    tkimage_openinfolder = image2tk('A:/GitHub/tkinter/code/icon1/folder.png', (30, 32))
     btn_videodetection_results = tk.Button(win_main, image=tkimage_openinfolder, cursor='hand2', command=btn_videodetection_results_f, state=DISABLED)
 
     # 窗口复原按钮图标
-    tkimage_win_init = image2tk('A:/GitHub/tkinter/code/icon2/previsous.png', (32,32))
+    tkimage_win_init = image2tk('A:/GitHub/tkinter/code/icon1/previsous.png', (32,32))
     btn_win_init = tk.Button(win_main, image=tkimage_win_init, cursor='hand2', command=btn_win_init_f, state=DISABLED)
 
     # 创建comb，此comb在选择按钮被点击并存在选择项是才被加载窗口中

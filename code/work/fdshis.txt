@@ -1,5 +1,10 @@
-2021-09-23-23-10-45
-A:/tkinter/code/fds/case1_right.fds
-A:/tkinter/code/fds/case2_all.fds
-A:/tkinter/code/fds/case2_left.fds
-A:/tkinter/code/fds/case2_right.fds
+2021-09-26-10-22-07
+A:/github/tkinter/code/fds/case0_all.fds
+A:/github/tkinter/code/fds/case0_only_leftdoor.fds
+A:/github/tkinter/code/fds/case0_right.fds
+A:/github/tkinter/code/fds/case1_all.fds
+A:/github/tkinter/code/fds/case1_left.fds
+A:/github/tkinter/code/fds/case1_right.fds
+A:/github/tkinter/code/fds/case2_all.fds
+A:/github/tkinter/code/fds/case2_left.fds
+A:/github/tkinter/code/fds/case2_right.fds

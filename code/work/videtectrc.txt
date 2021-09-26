@@ -1,2 +1,0 @@
-int_read_delay:88
-int_detect_delay:88
