@@ -1027,7 +1027,7 @@ if __name__ == "__main__" :
 
     # 窗口初始化
     win_main = tk.Tk()
-    win_main.title('Evidetec 1.0') # Evacuation based on video detection
+    win_main.title('OiEO 1.0') # Evacuation based on video detection
     win_main.geometry('800x510')
     win_main['bg'] = 'white' 
     win_main.resizable(False, False)
